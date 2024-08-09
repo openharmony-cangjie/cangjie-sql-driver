@@ -7,6 +7,14 @@
 当前只是用 msyql8.0 验证
 
 ````
+CREATE TABLE `squareNum` (
+`number` int NOT NULL,
+`squareNumber` int DEFAULT NULL,
+PRIMARY KEY (`number`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+````
+
+````
 main(): Int64 {
     info("启动。。。")
     let mysql = Config("localhost", 3307, "root", "root", "temp").Build()
