@@ -1,0 +1,7 @@
+.idea
+.vscode
+.cache
+target
+.DS_Store
+*.macrocall
+*/.DS_Store
