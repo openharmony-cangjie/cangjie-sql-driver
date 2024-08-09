@@ -2,9 +2,12 @@
 
 仓颉语言原生 mysql 驱动
 
+
+备份地址(gitcode每次推送会导致 404， 优先使用 github) https://gitcode.com/service/cangjie-sql-driver/overview
+
 ### 使用
 
-当前只是用 msyql8.0 验证
+当前只是用 msyql8.0 验证; 开发中，还未稳定
 
 ````
 CREATE TABLE `squareNum` (
