@@ -11,7 +11,7 @@ main(): Int64 {
     info("链接成功")
     var stmt = mysql.Prepare("INSERT INTO squareNum VALUES( ?, ? )")
     info("插入数据")
-    stmt.Exec(100,200)
+    stmt.Exec(101,201)
 
     var stmtOut = mysql.Prepare("SELECT squareNumber FROM squarenum WHERE number = ?")
     var data = stmtOut.QueryRow(2)
