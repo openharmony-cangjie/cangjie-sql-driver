@@ -25,7 +25,7 @@ class MysqlConn {
 
     var result: MysqlResult = MysqlResult()
 
-    var maxAllowedPacket: UInt32 = 1<<24 - 1
+    var maxAllowedPacket: UInt32 = 1 << 24 - 1
 
     public init(cfg: Config) {
         this.cfg = cfg
@@ -34,33 +34,33 @@ class MysqlConn {
         var socket = TcpSocket(cfg.address, cfg.port)
 
         socket.connect()
-            this.socket = socket
+        this.socket = socket
 
-            this.buf = Buffer(this.socket)
+        this.buf = Buffer(this.socket)
 
-            // 认证随机数和方式
-            // plugin: caching_sha2_password
-            var (authData, plugin) = this.readHandshakePacket()
-            if (plugin == "") {
-                plugin = "mysql_native_password"
-            }
-            info("解析认证随机数和方式: plugin(${plugin}) authData(${authData})")
+        // 认证随机数和方式
+        // plugin: caching_sha2_password
+        var (authData, plugin) = this.readHandshakePacket()
+        if (plugin == "") {
+            plugin = "mysql_native_password"
+        }
+        info("解析认证随机数和方式: plugin(${plugin}) authData(${authData})")
 
-            // 准备发送认证数据包
-            let authResp = this.auth(authData, plugin)
-            this.writeHandshakeResponsePacket(authResp, plugin)
+        // 准备发送认证数据包
+        let authResp = this.auth(authData, plugin)
+        this.writeHandshakeResponsePacket(authResp, plugin)
 
-            this.handleAuthResult(authData, plugin)
+        this.handleAuthResult(authData, plugin)
 
-            // Handle DSN Params
-            this.handleParams()
+        // Handle DSN Params
+        this.handleParams()
     }
 
     // 认证Handshake
     public func writeHandshakeResponsePacket(authResp: Array<UInt8>, plugin: String) {
         var clientFlags = ClientProtocol41 | ClientSecureConn | ClientLongPassword | ClientTransactions |
             ClientLocalFiles | ClientPluginAuth | ClientMultiResults | ClientConnectAttrs | this.flags & ClientLongFlag
-        
+
         // 对密码长度进行固定编码
         var authRespLEIBuf = ArrayList<UInt8>()
         var authRespLEI = appendLengthEncodedInteger(authRespLEIBuf, authResp.size)
@@ -95,7 +95,7 @@ class MysqlConn {
         data[9] = 0x00
         data[10] = 0x00
         data[11] = 0x00
-        
+
         // Collation ID [1 byte]
         let cname = this.cfg.collation
 
@@ -117,7 +117,7 @@ class MysqlConn {
         }
         data[pos] = 0x00
         pos++
-        
+
         pos += listCopyList(data, pos, authRespLEI, 0, authRespLEI.size)
         pos += listCopyArray(data, pos, authResp, 0, authResp.size)
 
@@ -134,7 +134,7 @@ class MysqlConn {
         // Connection Attributes
         pos += listCopyList(data, pos, connAttrsLEI, 0, connAttrsLEI.size)
         pos += listCopyString(data, pos, this.connector.encodedAttributes)
-        
+
         // 开始发送数据包
         return this.writePacket(data[..pos])
     }
@@ -146,8 +146,7 @@ class MysqlConn {
                 // MySQL 8+ 默认验证方式 (SHA256)
                 return sha256(authData, this.cfg.password)
 
-            case "mysql_native_password" =>
-                return sha1(authData[..20], this.cfg.password)
+            case "mysql_native_password" => return sha1(authData[..20], this.cfg.password)
             case _ => throw Exception("不支持的认证方式 ${plugin}")
         }
 
@@ -286,11 +285,11 @@ class MysqlConn {
             this.sequence++
 
             if (size != maxPacketSize) {
-				return
-			}
-			pktLen -= size
-			data = data[size..]
-			continue
+                return
+            }
+            pktLen -= size
+            data = data[size..]
+            continue
         }
     }
 
@@ -323,25 +322,24 @@ class MysqlConn {
                                 return;
                             }
                             throw Exception("handleAuthResult 3效的认证结果 {authData}")
-                        case 4 => 
-                            throw Exception("认证结果 4 需要重新发起认证 {authData}")
-                            // // 检查 tls 连接 TODO
-                            // if (this.cfg.tls) {
-                            //     // TODO
-                            //     throw Exception("不支持的tls 1")
-                            // } else {
-                            //     var wData = this.buf.takeSmallBuffer(4 + 1)
-                            //     wData[4] = 2
-                            //     this.writePacket(wData)
-                            //     let rData = this.readPacket()
+                        case 4 => throw Exception("认证结果 4 需要重新发起认证 {authData}")
+                        // // 检查 tls 连接 TODO
+                        // if (this.cfg.tls) {
+                        //     // TODO
+                        //     throw Exception("不支持的tls 1")
+                        // } else {
+                        //     var wData = this.buf.takeSmallBuffer(4 + 1)
+                        //     wData[4] = 2
+                        //     this.writePacket(wData)
+                        //     let rData = this.readPacket()
 
-                            //     if (rData[0] != iAuthMoreData) {
-                            //         throw Exception("服务器对caching.sha2-password的响应异常，请执行完全身份验证")
-                            //     }
-                            //     // 解析 public key
-                            //     let pubKey = RSAPublicKey.decodeFromPem(String.fromUtf8(rData[1..]))
-                            //     this.sendEncryptedPassword(oldAuthData, pubKey)
-                            // }
+                        //     if (rData[0] != iAuthMoreData) {
+                        //         throw Exception("服务器对caching.sha2-password的响应异常，请执行完全身份验证")
+                        //     }
+                        //     // 解析 public key
+                        //     let pubKey = RSAPublicKey.decodeFromPem(String.fromUtf8(rData[1..]))
+                        //     this.sendEncryptedPassword(oldAuthData, pubKey)
+                        // }
                         case _ => throw Exception("handleAuthResult case _ 无效的认证结果 {authData}")
                     }
                 }
@@ -387,31 +385,31 @@ class MysqlConn {
     public func readResultSetHeaderPacket(): Int64 {
         let data = this.readPacket()
         match (data[0]) {
-        	case 0=>
-        	    this.handleOkPacket(data)
-        	    return 0
-        	case 255=>
-        	    // 识别不同错误
+            case 0 =>
+                this.handleOkPacket(data)
+                return 0
+            case 255 =>
+                // 识别不同错误
                 this.handleErrorPacket(data)
                 return 0
-        	case 251=>
-        	    throw Exception("TODO iLocalInFile readResultSetHeaderPacket")
-        	    return 0
+            case 251 =>
+                throw Exception("TODO iLocalInFile readResultSetHeaderPacket")
+                return 0
 
-        	case _ =>
+            case _ =>
                 // 读取 column 数量
                 var (num, _, _) = readLengthEncodedInteger(data)
                 return Int64(num)
         }
 
         // 读取 column 数量
-		var (num, _, _) = readLengthEncodedInteger(data)
-		return Int64(num)
+        var (num, _, _) = readLengthEncodedInteger(data)
+        return Int64(num)
     }
 
     // 便捷丢弃 affectedRows 和 insertIds.
     public func discardResults() {
-        while ((this.status&StatusMoreResultsExists) != 0) {
+        while ((this.status & StatusMoreResultsExists) != 0) {
             let resLen = this.readResultSetHeaderPacket()
             if (resLen > 0) {
                 // columns

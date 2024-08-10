@@ -103,7 +103,7 @@ public class Buffer {
         return this.buf
     }
 
-    public func store(buf: Array<UInt8>){
+    public func store(buf: Array<UInt8>) {
         this.buf = ArrayList<UInt8>(buf)
     }
 }

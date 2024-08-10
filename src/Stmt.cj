@@ -41,85 +41,85 @@ class Stmt {
         debug("couht", resLen)
     }
 
-    public func QueryRow(args: Array<Any>):Array<mysqlField> {
-    	// 发送参数包
+    public func QueryRow(args: Array<Any>): Array<mysqlField> {
+        // 发送参数包
         this.writeExecutePacket(args)
 
         // 读取响应
         var resLen = this.conn.readResultSetHeaderPacket()
-        if (resLen>0) {
-             return this.readColumns(Int64(resLen))
+        if (resLen > 0) {
+            return this.readColumns(Int64(resLen))
         }
 
         return Array<mysqlField>()
     }
 
-    public func readColumns(count:Int64):Array<mysqlField> {
-        var i:Int64 = 0
+    public func readColumns(count: Int64): Array<mysqlField> {
+        var i: Int64 = 0
         var columns = Array<mysqlField>(Int64(count), item: mysqlField())
 
-        while (true){
+        while (true) {
             let data = this.conn.readPacket()
             // 检查是否是结束包
             if (data[0] == 254 && (data.size == 1 || data.size == 5)) {
                 if (i == count) {
-                	return columns
+                    return columns
                 }
             }
             var pos = skipLengthEncodedString(data)
 
-                // Database [len coded string]
+            // Database [len coded string]
+            var n = skipLengthEncodedString(data[pos..])
+            pos += n
+
+            var column = columns[i]
+
+            // Table [len coded string]
+            if (this.conn.cfg.ColumnsWithAlias) {
+                var (tableName, _, n) = readLengthEncodedString(data[pos..])
+                pos += n
+                column.tableName = String.fromUtf8(tableName)
+            } else {
                 var n = skipLengthEncodedString(data[pos..])
                 pos += n
+            }
+            // Original table [len coded string]
+            n = skipLengthEncodedString(data[pos..])
+            pos += n
 
-                var column = columns[i]
+            // Name [len coded string]
+            var name: Array<UInt8>
+            (name, _, n) = readLengthEncodedString(data[pos..])
+            column.name = String.fromUtf8(name)
+            pos += n
 
-                // Table [len coded string]
-                if (this.conn.cfg.ColumnsWithAlias) {
-                    var (tableName, _, n) = readLengthEncodedString(data[pos..])
-                    pos += n
-                    column.tableName = String.fromUtf8(tableName)
-                } else {
-                    var n = skipLengthEncodedString(data[pos..])
-                    pos += n
-                }
-                // Original table [len coded string]
-                n = skipLengthEncodedString(data[pos..])
-                pos += n
+            // Original name [len coded string]
+            n = skipLengthEncodedString(data[pos..])
+            pos += n
 
-                // Name [len coded string]
-                var name:Array<UInt8>
-                (name, _, n) = readLengthEncodedString(data[pos..])
-                column.name = String.fromUtf8(name)
-                pos += n
+            // Filler [uint8]
+            pos++
 
-                // Original name [len coded string]
-                n = skipLengthEncodedString(data[pos..])
-                pos += n
+            // Charset [charset, collation uint8]
+            column.charSet = data[pos]
+            pos += 2
 
-                // Filler [uint8]
-                pos++
+            // Length [uint32]
+            column.length = UInt32.readLittleEndian(data[pos..pos + 4])
+            pos += 4
 
-                // Charset [charset, collation uint8]
-                column.charSet = data[pos]
-                pos += 2
+            // Field type [uint8]
+            column.fieldType = data[pos]
+            pos++
 
-                // Length [uint32]
-                column.length = UInt32.readLittleEndian(data[pos..pos+4])
-                pos += 4
+            // Flags [uint16]
+            column.flags = UInt16.readLittleEndian(data[pos..pos + 2])
+            pos += 2
 
-                // Field type [uint8]
-                column.fieldType = data[pos]
-                pos++
+            // Decimals [uint8]
+            column.decimals = data[pos]
 
-                // Flags [uint16]
-                column.flags = UInt16.readLittleEndian(data[pos..pos+2])
-                pos += 2
-
-                // Decimals [uint8]
-                column.decimals = data[pos]
-
-                columns[i] = column
+            columns[i] = column
             i++
         }
 
@@ -203,10 +203,10 @@ class Stmt {
             let maskLen = (args.size + 7) / 8
             let typesLen = 1 + 2 * args.size
             if (pos + maskLen + typesLen >= data.size) {
-                data.appendAll(Array<UInt8>(maskLen + 1, item:0))
+                data.appendAll(Array<UInt8>(maskLen + 1, item: 0))
                 pos += maskLen
             } else {
-                data.appendAll(Array<UInt8>(nullMask.size + 1, item:0))
+                data.appendAll(Array<UInt8>(nullMask.size + 1, item: 0))
                 pos += maskLen
             }
             // 新参数边界 1 [1 byte]
@@ -219,22 +219,22 @@ class Stmt {
 
             for (arg in args) {
                 // 映射数据库的NULL值
-//                match (arg as SqlNullableDbType) {
-//                    case Node=>
-//                    nullMask[i/8] |= UInt8(1 << (i & 7))
-//                    paramTypes[i+i] = UInt8(FieldTypeNULL)
-//                    paramTypes[i+i+1] = 0x00
-//
-//                    continue
-//                }
+                //                match (arg as SqlNullableDbType) {
+                //                    case Node=>
+                //                    nullMask[i/8] |= UInt8(1 << (i & 7))
+                //                    paramTypes[i+i] = UInt8(FieldTypeNULL)
+                //                    paramTypes[i+i+1] = 0x00
+                //
+                //                    continue
+                //                }
                 // 对每种不通知值类型进行编码
                 match (arg) {
-                	case v:String=>
+                    case v: String =>
                         paramTypes.append(UInt8(FieldTypeString))
                         paramTypes.append(0x00)
 
-                	    paramValues.appendAll(v)
-                	case v:Int=>
+                        paramValues.appendAll(v)
+                    case v: Int =>
                         paramTypes.append(UInt8(FieldTypeLongLong))
                         paramTypes.append(0x00)
 
@@ -242,9 +242,9 @@ class Stmt {
                         UInt64(v).writeLittleEndian(vByte)
 
                         paramValues.appendAll(vByte)
-                	case _ =>
-                	    error("无法识别的参数类型｜待支持的类型", arg)
-                	    throw Exception("无法识别的参数类型｜待支持的类型")
+                    case _ =>
+                        error("无法识别的参数类型｜待支持的类型", arg)
+                        throw Exception("无法识别的参数类型｜待支持的类型")
                 }
             }
 

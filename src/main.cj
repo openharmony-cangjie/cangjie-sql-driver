@@ -6,12 +6,14 @@ import std.sync.*
 import std.os.posix
 
 main(): Int64 {
+    level = LogLevel.info
+
     info("启动。。。")
     let mysql = Config("localhost", 3306, "root", "root", "temp").Build()
-    info("链接成功")
-    var stmt = mysql.Prepare("INSERT INTO squareNum VALUES( ?, ? )")
-    info("插入数据")
-    stmt.Exec(101,201)
+
+    //    var stmt = mysql.Prepare("INSERT INTO squareNum VALUES( ?, ? )")
+    //    info("插入数据")
+    //    stmt.Exec(101,201)
 
     var stmtOut = mysql.Prepare("SELECT squareNumber FROM squarenum WHERE number = ?")
     var data = stmtOut.QueryRow(2)

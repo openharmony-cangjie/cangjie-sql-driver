@@ -6,8 +6,8 @@ import std.unittest.testmacro.*
 
 @Test
 func copyTest() {
-        var clientFlags = ClientProtocol41 | ClientSecureConn | ClientLongPassword | ClientTransactions |
-            ClientLocalFiles | ClientPluginAuth | ClientMultiResults | ClientConnectAttrs | 65535 & ClientLongFlag
+    var clientFlags = ClientProtocol41 | ClientSecureConn | ClientLongPassword | ClientTransactions | ClientLocalFiles |
+        ClientPluginAuth | ClientMultiResults | ClientConnectAttrs | 65535 & ClientLongFlag
 
     //512
     //32768

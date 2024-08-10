@@ -30,8 +30,8 @@ func echoAny(v: Any) {
         case s: Array<UInt8> =>
             Console.stdOut.write("[")
             Console.stdOut.write(s[0])
-            if(s.size > 1) {
-                for(v in s[1..]) {
+            if (s.size > 1) {
+                for (v in s[1..]) {
                     Console.stdOut.write(" ")
                     Console.stdOut.write(v)
                 }
@@ -40,8 +40,8 @@ func echoAny(v: Any) {
         case s: ArrayList<UInt8> =>
             Console.stdOut.write("[")
             Console.stdOut.write(s[0])
-            if(s.size > 1) {
-                for(v in s[1..]) {
+            if (s.size > 1) {
+                for (v in s[1..]) {
                     Console.stdOut.write(" ")
                     Console.stdOut.write(v)
                 }

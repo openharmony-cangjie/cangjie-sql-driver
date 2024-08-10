@@ -105,19 +105,17 @@ const FieldTypeVarString: UInt8 = 253
 const FieldTypeString: UInt8 = 254
 const FieldTypeGeometry: UInt8 = 255
 
-
 // http://dev.mysql.com/doc/internals/en/client-server-protocol.html
 const iOK: UInt8 = 0
 const iAuthMoreData: UInt8 = 1
 const iLocalInFile: UInt8 = 251
 const iEOF: UInt8 = 254
 const iERR: UInt8 = 255
-
-const  connAttrClientName      = "_client_name"
-const  connAttrClientNameValue = "Go-MySQL-Driver"
-const  connAttrOS              = "_os"
-const  connAttrOSValue         = "darwin"
-const  connAttrPlatform        = "_platform"
-const  connAttrPlatformValue   = "arm64"
-const  connAttrPid             = "_pid"
-const  connAttrServerHost      = "_server_host"
+const connAttrClientName = "_client_name"
+const connAttrClientNameValue = "Go-MySQL-Driver"
+const connAttrOS = "_os"
+const connAttrOSValue = "darwin"
+const connAttrPlatform = "_platform"
+const connAttrPlatformValue = "arm64"
+const connAttrPid = "_pid"
+const connAttrServerHost = "_server_host"
