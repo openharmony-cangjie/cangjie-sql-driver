@@ -45,7 +45,7 @@ func sha1(scramble:Array<UInt8>, password:String): Array<UInt8> {
 
     var i = 0
 	for (_ in scramble) {
-		scramble[i] ^= stage1[i]
+		md[i] ^= stage1[i]
         i++
 	}
 

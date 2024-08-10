@@ -7,7 +7,7 @@ import std.os.posix
 
 main(): Int64 {
     info("启动。。。")
-    let mysql = Config("localhost", 3307, "root", "root", "temp").Build()
+    let mysql = Config("localhost", 3306, "root", "root", "temp").Build()
     info("链接成功")
     var stmt = mysql.Prepare("INSERT INTO squareNum VALUES( ?, ? )")
     info("插入数据")

@@ -450,7 +450,7 @@ class MysqlConn {
         let data = this.readPacket()
 
         match (data[0]) {
-            case 0x00 => throw Exception("无效的认证结果 00")
+            case 0x00 => return (Array<UInt8>(), "")
             case 0x01 => return (data[1..], "")
             case 0xfe => // iEOF
                 if (data.size == 1) {
@@ -458,7 +458,8 @@ class MysqlConn {
                 }
 
                 throw Exception("无效的认证结果 01")
-            case _ => 
+            case _ =>
+                error("无效的认证结果", data)
                 throw Exception("无效的认证结果 02")
         }
     }
