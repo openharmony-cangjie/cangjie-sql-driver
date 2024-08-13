@@ -12,37 +12,26 @@ main(): Int64 {
 
     // 通过connectionString和选项打开数据源
     let datasource: MysqlDatasource = mysqlDriver.open(
-        "root:root@tcp(localhost:3307)/temp",
+        "root:root@tcp(localhost:3306)/temp",
         Array<(String, String)>()
     )
 
     let conn = datasource.connect()
-
-    let stmt1 = conn.prepareStatement("SELECT squareNumber FROM squarenum WHERE number = ?")
-    let result = stmt1.query(SqlInteger(2))
+    let stmt1 = conn.prepareStatement("SELECT * FROM squarenum")
+    let result = stmt1.query()
 
     info("quere = ", result)
     // 获取数据
-    var squareNumber = SqlBigInt(0)
-    var arrDb: Array<SqlDbType> = [squareNumber]
+    var Id = SqlInteger(0)
+    var Age = SqlInteger(0)
+    var Str = SqlNullableVarchar("")
+    var arrDb: Array<SqlDbType> = [Id, Age, Str]
     var isBool = result.next(arrDb)
     if (!isBool) {
-        println("pass26")
+        error("读取失败")
     }
 
-    debug("arrDb = ", arrDb)
-
-
-//    info("启动。。。")
-//    let mysql = Config("localhost", 3307, "root", "root", "temp").Build()
-////    info("链接成功")
-////    var stmt = mysql.Prepare("INSERT INTO squareNum VALUES( ?, ? )")
-////
-////    stmt.Exec(101,201)
-//
-//    var stmtOut = mysql.Prepare("SELECT squareNumber FROM squarenum WHERE number = ?")
-//    var data = stmtOut.QueryRows(2)
-//    info("读取信息 = ", data)
+    debug("Id = ${Id.value} Age = ${Age.value} Str = ${Str.value} ")
 
     return 0
 }

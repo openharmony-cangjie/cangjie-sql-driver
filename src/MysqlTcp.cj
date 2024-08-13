@@ -1,6 +1,7 @@
 package mysql
 
 import std.socket.*
+import std.database.sql.*
 import std.collection.*
 import std.convert.*
 import std.binary.*
@@ -73,6 +74,11 @@ public class MysqlTcp {
     // 写入命令
     public func writeCommandPacketUint32(command: UInt8, arg: UInt32) {
         this.packet.writeCommandPacketUint32(command, arg)
+    }
+
+    // Exec 参数
+    public func writeExecutePacket(stmt: MysqlStatement, args: Array<SqlDbType>) {
+        this.packet.writeExecutePacket(stmt, args)
     }
 
     // clearResult.readResultSetHeaderPacket

@@ -18,8 +18,10 @@ public class MysqlQueryResult <: QueryResult {
     	this.stmt = stmt
     	this.params = params
 
-    	var resLen = this.stmt.conn.readResultSetHeaderPacket()
-    	debug("columns = ", this.columns)
+    	// 发送参数包
+        stmt.conn.writeExecutePacket(stmt, this.params)
+
+    	var resLen = stmt.conn.readResultSetHeaderPacket()
         if (resLen>0) {
              this.columns = this.readColumns(Int64(resLen))
         }
@@ -43,7 +45,7 @@ public class MysqlQueryResult <: QueryResult {
                 var n = skipLengthEncodedString(data[pos..])
                 pos += n
 
-                var column = columns[i]
+                var column = MysqlColumnInfo()
 
                 // Table [len coded string]
                 if (this.stmt.conn.config.ColumnsWithAlias) {
@@ -62,6 +64,7 @@ public class MysqlQueryResult <: QueryResult {
                 var name:Array<UInt8>
                 (name, _, n) = readLengthEncodedString(data[pos..])
                 column.nameString = String.fromUtf8(name)
+
                 pos += n
 
                 // Original name [len coded string]
@@ -108,51 +111,46 @@ public class MysqlQueryResult <: QueryResult {
 
     // 根据传入类型填充
     public func next(values: Array<SqlDbType>): Bool {
-        let data = this.stmt.conn.readPacket()
-        if(data[0] != iOK) {
-        	if (data[0] == iEOF && data.size == 5) {
-        		throw EOF()
-        	}
-        	this.stmt.conn.handleErrorPacket(data)
-        }
-
-        // NULL-bitmap,  [(column-count + 7 + 2) / 8 bytes]
-        var pos = 1 + ((this.columns.size+7+2)>>3)
+        let rows= this.readRow()
 
         for (i in 0..values.size) {
+            var row = rows[i]
             var sqlDbType = values[i]
         	let column = this.columns[i]
         	match (column.fieldType) {
         	    // fieldTypeNULL 数据库返回的值是 NULL
-        		case 6=> sqlDbType = SqlNullableInteger(None)
-                case _=> (sqlDbType, pos) = readData(sqlDbType, data, pos)
+        		case 6=> values[i] = SqlNullableInteger(None)
+                case _=> this.readData(sqlDbType, rows, i)
         	}
         }
 
         return true
     }
 
-    func readData(value: SqlDbType, data: Array<UInt8>, pos: Int): (SqlDbType, Int) {
-    	return match (value) {
+    func readData(value: SqlDbType, rows: Array<Array<UInt8>>, i: Int64) {
+    	match (value) {
                 // String----SqlChar----CHAR----CHAR----MYSQL_TYPE_STRING----char[]
 
                 // SQL类型不同，但是数据值相对应
                 // Int32----SqlInteger----INTEGER----INT----MYSQL_TYPE_LONG----int
-                case _: SqlInteger => let v = SqlInteger(Int32(UInt16.readLittleEndian(data[pos..pos+4])))
-                    (v, pos + 4)
-
-                case _: SqlNullableInteger =>
-                    // TODO 这里会截断, 长度需要 Int64
-                    let v = SqlNullableInteger(Int32(UInt32.readLittleEndian(data[pos..pos+4])))
-                    (v, pos + 4)
+                case v: SqlInteger => v.value = getInterger32(rows[i]).getOrThrow()
+                case v: SqlNullableInteger => v.value = getInterger32(rows[i]).getOrThrow()
 
 
-                case _ => throw SqlException("Unsupported data type.")
+                case v: SqlBigInt => v.value = getInterger64(rows[i]).getOrThrow()
+                case v: SqlNullableBigInt => v.value = getInterger64(rows[i]).getOrThrow()
+
+
+                case v: SqlVarchar => v.value = getString(rows[i]).getOrThrow()
+                case v: SqlNullableVarchar => v.value = getString(rows[i])
+
+
+                case _ => throw SqlException("等待支持的类型 type = ${value.name}")
         }
     }
 
     // todo 和 语言级别类型直接映射
-    public func row() {
+    public func readRow(): Array<Array<UInt8>>{
     	let data = this.stmt.conn.readPacket()
 
         if(data[0] != iOK) {
@@ -164,43 +162,34 @@ public class MysqlQueryResult <: QueryResult {
         // NULL-bitmap,  [(column-count + 7 + 2) / 8 bytes]
         var pos = 1 + ((this.columns.size+7+2)>>3)
 
-        var row = HashMap<String, Any>()
+        var row = Array<Array<UInt8>>(this.columns.size, item: Array<UInt8>())
 
         for (i in 0..this.columns.size) {
         	let column = this.columns[i]
         	match (column.fieldType) {
         	    // fieldTypeNULL 数据库返回的值是 NULL
-        		case 6=> row[column.name] = null
+        		case 6=> row[i] = Array<UInt8>()
         		// fieldTypeTiny 数字类型
-        		case 1=> if ((column.flags & flagUnsigned) != 0) {
-                    row[column.name] = Int64(data[pos])
-        		} else {
-        		    row[column.name] = Int64(Int8(data[pos]))
-        		}
-        		pos++
+        		case 1=> row[i] = Array<UInt8>([data[pos]])
+        		    pos++
         		// fieldTypeShort, fieldTypeYear:
-        		case 2 | 13 => if ((column.flags & flagUnsigned) != 0) {
-                    row[column.name] = Int64(UInt16.readLittleEndian(data[pos..pos+2]))
-        		} else {
-        		    row[column.name] = Int64(Int16(UInt16.readLittleEndian(data[pos..pos+2])))
-        		}
-        		pos += 2
-        		// fieldTypeInt24, fieldTypeLong
-        		case 3 | 9=> if ((column.flags & flagUnsigned) != 0) {
-                    row[column.name] = Int64(UInt32.readLittleEndian(data[pos..pos+4]))
-        		} else {
-        		    row[column.name] = Int64(Int32(UInt16.readLittleEndian(data[pos..pos+4])))
-        		}
-        		pos += 4
-        		debug("row.value = ", row[column.name])
-        		// fieldTypeLongLong
-        		case 8 => row[column.name] = Int64(UInt16.readLittleEndian(data[pos..pos+8]))
-        		pos += 8
+        		case 2 | 13 => row[i] = data[pos..pos+2]
+        		    pos += 2
+        		// fieldTypeInt24, fieldTypeLong, fieldTypeFloat
+        		case 9 | 3 | 4=> row[i] = data[pos..pos+4]
+        		    pos += 4
+        		// fieldTypeLongLong, fieldTypeDouble
+        		case 8 | 5 => row[i] = data[pos..pos+8]
+        		    pos += 8
 
-
-        		case _=> throw Exception("TODO 未支持的数据库类型")
+        		case _=>
+        		var checkData = data[pos..]
+                    var (tmp, _, n) = readLengthEncodedString(checkData)
+                    pos += n
+                    row[i] = tmp
         	}
         }
+        return row
     }
 
      /*
