@@ -30,7 +30,7 @@ public class MysqlStatement <: Statement {
         if (columnCount > 0) {
             conn.readUntilEOF()
         }
-        info("预处理后, 行数量(${columnCount}), 需要参数(${this.paramCount})")
+        info("预执行后, StmtID(${this.id}), 行数量(${columnCount}), 需要参数(${this.paramCount})")
     }
 
     /*
