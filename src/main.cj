@@ -19,7 +19,7 @@ main(): Int64 {
     let conn = datasource.connect()
 
     let stmt1 = conn.prepareStatement("SELECT squareNumber FROM squarenum WHERE number = ?")
-    let result = stmt1.query()
+    let result = stmt1.query(SqlInteger(2))
 
     info("quere = ", result)
     // 获取数据

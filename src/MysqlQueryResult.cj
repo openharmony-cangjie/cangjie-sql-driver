@@ -19,6 +19,7 @@ public class MysqlQueryResult <: QueryResult {
     	this.params = params
 
     	var resLen = this.stmt.conn.readResultSetHeaderPacket()
+    	debug("columns = ", this.columns)
         if (resLen>0) {
              this.columns = this.readColumns(Int64(resLen))
         }
