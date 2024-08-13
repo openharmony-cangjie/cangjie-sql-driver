@@ -13,11 +13,11 @@ main(): Int64 {
     )
 
     let conn = datasource.connect()
-    let stmt1 = conn.prepareStatement("INSERT INTO squareNum VALUES( ?, ? , ?)")
+    let stmt1 = conn.prepareStatement("INSERT INTO users VALUES( ?, ? , ?)")
     stmt1.update(SqlInteger(1), SqlInteger(2), SqlNullableVarchar("哈哈"))
 
     // 读取
-    let stmt2 = conn.prepareStatement("SELECT * FROM squarenum")
+    let stmt2 = conn.prepareStatement("SELECT * FROM users")
     let result = stmt2.query()
 
     info("quere = ", result)

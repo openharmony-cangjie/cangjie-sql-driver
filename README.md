@@ -14,14 +14,20 @@ https://github.com/openharmony-cangjie/cangjie-sql-driver
 当前只是用 msyql8.0 验证; 开发中，还未稳定
 
 ````
-CREATE TABLE `squareNum` (
-`number` int NOT NULL,
-`squareNumber` int DEFAULT NULL,
-PRIMARY KEY (`number`)
+CREATE TABLE `users` (
+  `id` int NOT NULL,
+  `age` int DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ````
 
 ````
+package mysql
+
+import std.database.sql.*
+
+main(): Int64 {
     // 初始化数据库驱动
     let mysqlDriver = MysqlDriver("mysql")
 
@@ -32,11 +38,11 @@ PRIMARY KEY (`number`)
     )
 
     let conn = datasource.connect()
-    let stmt1 = conn.prepareStatement("INSERT INTO squareNum VALUES( ?, ? , ?)")
+    let stmt1 = conn.prepareStatement("INSERT INTO users VALUES( ?, ? , ?)")
     stmt1.update(SqlInteger(1), SqlInteger(2), SqlNullableVarchar("哈哈"))
 
     // 读取
-    let stmt2 = conn.prepareStatement("SELECT * FROM squarenum")
+    let stmt2 = conn.prepareStatement("SELECT * FROM users")
     let result = stmt2.query()
 
     info("quere = ", result)
@@ -53,6 +59,8 @@ PRIMARY KEY (`number`)
     } while (isBool)
 
     return 0
+}
+
 ````
 
 ### 参考
