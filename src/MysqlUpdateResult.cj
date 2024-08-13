@@ -14,9 +14,12 @@ public class MysqlUpdateResult <: UpdateResult {
     	this.stmt = stmt
     	this.params = params
 
+    	// 发送参数包
+        stmt.conn.writeExecutePacket(stmt, this.params)
+
     	var resLen = this.stmt.conn.readResultSetHeaderPacket()
         if (resLen>0) {
-
+            debug("MysqlUpdateResult.resLen = ", resLen)
         }
     }
 

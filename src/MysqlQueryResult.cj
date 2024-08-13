@@ -111,7 +111,10 @@ public class MysqlQueryResult <: QueryResult {
 
     // 根据传入类型填充
     public func next(values: Array<SqlDbType>): Bool {
-        let rows= this.readRow()
+        let (rows, has) = this.readRow()
+        if (!has) {
+        	return false
+        }
 
         for (i in 0..values.size) {
             var row = rows[i]
@@ -150,12 +153,12 @@ public class MysqlQueryResult <: QueryResult {
     }
 
     // todo 和 语言级别类型直接映射
-    public func readRow(): Array<Array<UInt8>>{
+    public func readRow(): (Array<Array<UInt8>>, Bool){
     	let data = this.stmt.conn.readPacket()
 
         if(data[0] != iOK) {
         	if (data[0] == iEOF && data.size == 5) {
-        		throw EOF()
+        		return (Array<Array<UInt8>>(), false)
         	}
         	this.stmt.conn.handleErrorPacket(data)
         }
@@ -189,7 +192,7 @@ public class MysqlQueryResult <: QueryResult {
                     row[i] = tmp
         	}
         }
-        return row
+        return (row, true)
     }
 
      /*

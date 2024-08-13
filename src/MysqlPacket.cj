@@ -196,56 +196,32 @@ public class MysqlPacket {
                 // 对每种不通知值类型进行编码
                 match (arg) {
                     // String----SqlChar----CHAR----CHAR----MYSQL_TYPE_STRING----char[]
-                    case v: SqlChar =>
-                        paramTypes.append(UInt8(FieldTypeString))
-                        paramTypes.append(0x00)
-                	    paramValues.appendAll(v.value)
+                    case v: SqlChar => toValString(paramTypes, paramValues, v.value)
                     case v: SqlNullableChar =>
                         match (v.value) {
-                        	case Some(v) =>
-                                paramTypes.append(UInt8(FieldTypeString))
-                                paramTypes.append(0x00)
-                                paramValues.appendAll(v)
+                        	case Some(v) => toValString(paramTypes, paramValues, v)
                             case None => toNULL(paramValues)
                         }
                     // // String----SqlVarchar----VARCHAR----VARCHAR----MYSQL_TYPE_VAR_STRING----char[]
-                    case v: SqlVarchar =>
-                        paramTypes.append(UInt8(FieldTypeVarString))
-                        paramTypes.append(0x00)
-                	    paramValues.appendAll(v.value)
+                    case v: SqlVarchar => toValString(paramTypes, paramValues, v.value)
                     case v: SqlNullableVarchar =>
                         match (v.value) {
-                        	case Some(v) =>
-                                paramTypes.append(UInt8(FieldTypeVarString))
-                                paramTypes.append(0x00)
-                                paramValues.appendAll(v)
+                        	case Some(v) => toValString(paramTypes, paramValues, v)
                             case None => toNULL(paramValues)
                         }
                     // // Array<Byte>----SqlBinary----BINARY----BINARY----MYSQL_TYPE_STRING----char[]
-                    case v: SqlBinary =>
-                        paramTypes.append(UInt8(FieldTypeString))
-                        paramTypes.append(0x00)
-                	    paramValues.appendAll(v.value)
+                    case v: SqlBinary => toBinary(paramTypes, paramValues, v.value)
                     case v: SqlNullableBinary =>
                         match (v.value) {
-                        	case Some(v) =>
-                                paramTypes.append(UInt8(FieldTypeString))
-                                paramTypes.append(0x00)
-                                paramValues.appendAll(v)
+                        	case Some(v) => toBinary(paramTypes, paramValues, v)
                             case None => toNULL(paramValues)
                         }
 
                     // // Array<Byte>----SqlVarBinary----VARBINARY----VARBINARY----MYSQL_TYPE_VAR_STRING----char[]
-                    case v: SqlVarBinary =>
-                        paramTypes.append(UInt8(FieldTypeVarString))
-                        paramTypes.append(0x00)
-                	    paramValues.appendAll(v.value)
+                    case v: SqlVarBinary =>  toBinary(paramTypes, paramValues, v.value)
                     case v: SqlNullableVarBinary =>
                         match (v.value) {
-                        	case Some(v) =>
-                                paramTypes.append(UInt8(FieldTypeVarString))
-                                paramTypes.append(0x00)
-                                paramValues.appendAll(v)
+                        	case Some(v) => toBinary(paramTypes, paramValues, v)
                             case None => toNULL(paramValues)
                         }
 
@@ -260,24 +236,10 @@ public class MysqlPacket {
 
                     // // 布尔类型在mysql数据库中表现形式是TINYINT
                     // // Bool----SqlBool----BOOLEAN----TINYINT----MYSQL_TYPE_TINY----signed char
-                    case v: SqlBool =>
-                        paramTypes.append(UInt8(FieldTypeTiny))
-                        paramTypes.append(0x00)
-                        if (v.value) {
-                            paramValues.append(0x01)
-                        } else {
-                            paramValues.append(0x00)
-                        }
+                    case v: SqlBool => toBool(paramTypes, paramValues, v.value)
                     case v: SqlNullableBool =>
                         match (v.value) {
-                        	case Some(v) =>
-                                paramTypes.append(UInt8(FieldTypeTiny))
-                                paramTypes.append(0x00)
-                                if (v) {
-                                    paramValues.append(0x01)
-                                } else {
-                                    paramValues.append(0x00)
-                                }
+                        	case Some(v) => toBool(paramTypes, paramValues, v)
                             case None => toNULL(paramValues)
                         }
 

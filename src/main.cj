@@ -17,8 +17,12 @@ main(): Int64 {
     )
 
     let conn = datasource.connect()
-    let stmt1 = conn.prepareStatement("SELECT * FROM squarenum")
-    let result = stmt1.query()
+    let stmt1 = conn.prepareStatement("INSERT INTO squareNum VALUES( ?, ? , ?)")
+    stmt1.update(SqlInteger(1), SqlInteger(2), SqlNullableVarchar("哈哈"))
+
+    // 读取
+    let stmt2 = conn.prepareStatement("SELECT * FROM squarenum")
+    let result = stmt2.query()
 
     info("quere = ", result)
     // 获取数据
@@ -26,12 +30,12 @@ main(): Int64 {
     var Age = SqlInteger(0)
     var Str = SqlNullableVarchar("")
     var arrDb: Array<SqlDbType> = [Id, Age, Str]
-    var isBool = result.next(arrDb)
-    if (!isBool) {
-        error("读取失败")
-    }
 
-    debug("Id = ${Id.value} Age = ${Age.value} Str = ${Str.value} ")
+    var isBool = false
+    do {
+    	isBool = result.next(arrDb)
+        debug("Id = ${Id.value} Age = ${Age.value} Str = ${Str.value} ")
+    } while (isBool)
 
     return 0
 }
