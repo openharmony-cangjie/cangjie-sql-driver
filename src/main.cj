@@ -1,9 +1,5 @@
 package mysql
 
-import std.socket.*
-import std.time.*
-import std.sync.*
-import std.os.posix
 import std.database.sql.*
 
 main(): Int64 {
