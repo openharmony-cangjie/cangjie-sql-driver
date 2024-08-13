@@ -2,6 +2,25 @@ package mysql
 
 const maxPacketSize = 1 << 24 - 1
 
+// column.flags
+const flagNotNULL: UInt16 = 1
+const flagPriKey: UInt16 = 2
+const flagUniqueKey: UInt16 = 4
+const flagMultipleKey: UInt16 = 8
+const flagBLOB: UInt16 =  16
+const flagUnsigned: UInt16 = 32
+const flagZeroFill: UInt16 = 64
+const flagBinary: UInt16 = 128
+const flagEnum: UInt16 = 256
+const flagAutoIncrement: UInt16 = 512
+const flagTimestamp: UInt16 = 1024
+const flagSet: UInt16 = 2048
+const flagUnknown1: UInt16 = 4096
+const flagUnknown2: UInt16 = 8192
+const flagUnknown3: UInt16 = 16384
+const flagUnknown4: UInt16 = 32768
+
+
 // https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_connection_phase_packets_protocol_handshake_response.html
 const ClientLongPassword: UInt32 = 1
 const ClientFoundRows: UInt32 = 2 << 0

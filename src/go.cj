@@ -134,28 +134,3 @@ struct errors {
 }
 
 var nil = errors("")
-
-
-struct mysqlField <: ToString {
-	var tableName :String = ""
-	var name      :String = ""
-	var length    :UInt32 = 0
-	var flags     :UInt16 = 0
-	var fieldType :UInt8 = 0
-	var decimals  :UInt8 = 0
-	var charSet   :UInt8 = 0
-
-	public func toString(): String {
-	    var str = "\nmysqlField{\n"
-	    str += "\ttableName = ${this.tableName}\n"
-	    str += "\tname = ${this.name}\n"
-	    str += "\tlength = ${this.length}\n"
-	    str += "\tflags = ${this.flags}\n"
-	    str += "\tfieldType = ${this.fieldType}\n"
-	    str += "\tdecimals = ${this.decimals}\n"
-	    str += "\tcharSet = ${this.charSet}\n"
-	    str += "}\n"
-
-	    return str
-	}
-}

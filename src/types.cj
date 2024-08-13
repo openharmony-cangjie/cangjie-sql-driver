@@ -1,3 +1,5 @@
 package mysql
 
-import std.database.sql.*
+class Null {}
+
+var null = Null()

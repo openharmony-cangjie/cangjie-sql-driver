@@ -4,16 +4,16 @@ import std.collection.*
 import std.os.posix.*
 
 class Connector {
-    let cfg: Config
+    let cfg: MysqlConfig
 	let encodedAttributes: String
 
-    public init(cfg: Config) {
+    public init(cfg: MysqlConfig) {
         this.cfg = cfg
 		this.encodedAttributes = encodeConnectionAttributes(cfg)
     }
 }
 
-func encodeConnectionAttributes(cfg: Config): String {
+func encodeConnectionAttributes(cfg: MysqlConfig): String {
 	var connAttrsBuf = ArrayList<UInt8>()
 
 	connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrClientName)

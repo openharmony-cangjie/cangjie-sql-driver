@@ -49,6 +49,8 @@ func echoAny(v: Any) {
             Console.stdOut.write("]")
         case s: ToString => Console.stdOut.write(s)
 
+        case s: ToString => Console.stdOut.write(s)
+
         case _ => ("TODO", v)
     }
 }

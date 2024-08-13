@@ -41,3 +41,4 @@ main(): Int64 {
 ### 参考
 
 https://github.com/go-sql-driver/mysql
+https://gitcode.com/Cangjie-TPC/mysqlclient-ffi.git

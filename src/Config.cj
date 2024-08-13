@@ -1,6 +1,6 @@
 package mysql
 
-struct Config {
+public struct Config {
     // 地址, 只能是IP或域名
     let address: String
     let port: UInt16
@@ -28,15 +28,13 @@ struct Config {
     let ParseTime                :Bool = false // Parse time values to time.Time
     let RejectReadOnly           :Bool = false // Reject read-only connections
 
+
+    // address = [user[:password]@][net[(addr)]]/dbname[?param1=value1&paramN=valueN]
     public init(address: String, port: UInt16, user: String, password: String, database: String) {
         this.address = address
         this.port = port
         this.user = user
         this.password = password
         this.database = database
-    }
-
-    public func Build(): MysqlConn {
-        return MysqlConn(this)
     }
 }
