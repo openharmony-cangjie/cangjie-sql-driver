@@ -16,7 +16,7 @@ public class MysqlColumnInfo <: ColumnInfo {
      */
     public override prop name: String {
         get() {
-            return nameString
+            return this.nameString
         }
     }
 

@@ -215,14 +215,14 @@ public class MysqlPacket {
                         	case Some(v) => toValString(paramTypes, paramValues, v)
                             case None => toNULL(paramValues)
                         }
-                    // // String----SqlVarchar----VARCHAR----VARCHAR----MYSQL_TYPE_VAR_STRING----char[]
+                    // String----SqlVarchar----VARCHAR----VARCHAR----MYSQL_TYPE_VAR_STRING----char[]
                     case v: SqlVarchar => toValString(paramTypes, paramValues, v.value)
                     case v: SqlNullableVarchar =>
                         match (v.value) {
                         	case Some(v) => toValString(paramTypes, paramValues, v)
                             case None => toNULL(paramValues)
                         }
-                    // // Array<Byte>----SqlBinary----BINARY----BINARY----MYSQL_TYPE_STRING----char[]
+                    // Array<Byte>----SqlBinary----BINARY----BINARY----MYSQL_TYPE_STRING----char[]
                     case v: SqlBinary => toBinary(paramTypes, paramValues, v.value)
                     case v: SqlNullableBinary =>
                         match (v.value) {
@@ -230,25 +230,32 @@ public class MysqlPacket {
                             case None => toNULL(paramValues)
                         }
 
-                    // // Array<Byte>----SqlVarBinary----VARBINARY----VARBINARY----MYSQL_TYPE_VAR_STRING----char[]
-                    case v: SqlVarBinary =>  toBinary(paramTypes, paramValues, v.value)
+                    // Array<Byte>----SqlVarBinary----VARBINARY----VARBINARY----MYSQL_TYPE_VAR_STRING----char[]
+                    case v: SqlVarBinary => toBinary(paramTypes, paramValues, v.value)
                     case v: SqlNullableVarBinary =>
                         match (v.value) {
                         	case Some(v) => toBinary(paramTypes, paramValues, v)
                             case None => toNULL(paramValues)
                         }
 
-                    // // 长字符串，mysql输入对应表格没有给出，在输出表格有对应数据
-                    // // Array<InputStream>----SqlClob----CLOB----LONGTEXT----MYSQL_TYPE_LONG_BLOB----char[]
-                    case v: SqlClob => throw SqlException("无法识别的参数类型｜待支持的类型 SqlClob")
-                    case v: SqlNullableClob =>  throw SqlException("无法识别的参数类型｜待支持的类型 SqlNullableClob")
+                    // 长字符串，mysql输入对应表格没有给出，在输出表格有对应数据
+                    // Array<InputStream>----SqlClob----CLOB----LONGTEXT----MYSQL_TYPE_LONG_BLOB----char[]
+                    case v: SqlClob => toClob(paramTypes, paramValues, v.value)
+                    case v: SqlNullableClob =>
+                        match (v.value) {
+                        	case Some(v) => toClob(paramTypes, paramValues, v)
+                            case None => toNULL(paramValues)
+                        }
 
-                    // // Array<InputStream>----SqlBlob----BLOB----BLOB----MYSQL_TYPE_BLOB----char[]
-                    case v: SqlBlob => throw SqlException("无法识别的参数类型｜待支持的类型 SqlBlob")
-                    case v: SqlNullableBlob =>  throw SqlException("无法识别的参数类型｜待支持的类型 SqlNullableBlob")
-
-                    // // 布尔类型在mysql数据库中表现形式是TINYINT
-                    // // Bool----SqlBool----BOOLEAN----TINYINT----MYSQL_TYPE_TINY----signed char
+                    // Array<InputStream>----SqlBlob----BLOB----BLOB----MYSQL_TYPE_BLOB----char[]
+                    case v: SqlBlob => toBlob(paramTypes, paramValues, v.value)
+                    case v: SqlNullableBlob =>
+                      match (v.value) {
+                        	case Some(v) => toBlob(paramTypes, paramValues, v)
+                            case None => toNULL(paramValues)
+                        }
+                    // 布尔类型在mysql数据库中表现形式是TINYINT
+                    // Bool----SqlBool----BOOLEAN----TINYINT----MYSQL_TYPE_TINY----signed char
                     case v: SqlBool => toBool(paramTypes, paramValues, v.value)
                     case v: SqlNullableBool =>
                         match (v.value) {
@@ -256,7 +263,7 @@ public class MysqlPacket {
                             case None => toNULL(paramValues)
                         }
 
-                    // // Int8----SqlByte----TINYINT----TINYINT----MYSQL_TYPE_TINY----signed char
+                    // Int8----SqlByte----TINYINT----TINYINT----MYSQL_TYPE_TINY----signed char
                     case v: SqlByte =>
                         paramTypes.append(UInt8(FieldTypeTiny))
                         paramTypes.append(0x00)
@@ -278,67 +285,69 @@ public class MysqlPacket {
                             case None => toNULL(paramValues)
                         }
 
-                    // // Int16----SqlSmallInt----SMALLINT----SMALLINT----MYSQL_TYPE_SHORT----short int
-                    case v: SqlSmallInt => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
-                    case v: SqlNullableSmallInt =>  throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
-                    // // SQL类型不同，但是数据值相对应
-                    // // Int32----SqlInteger----INTEGER----INT----MYSQL_TYPE_LONG----int
-                    case v: SqlInteger =>
-                        paramTypes.append(UInt8(FieldTypeLongLong))
-                        paramTypes.append(0x00)
-                        let vByte = Array<UInt8>(8, item: 0)
-                        UInt64(v.value).writeLittleEndian(vByte)
-                        paramValues.appendAll(vByte)
+                    // Int16----SqlSmallInt----SMALLINT----SMALLINT----MYSQL_TYPE_SHORT----short int
+                    case v: SqlSmallInt => toInt16(paramTypes, paramValues, v.value)
+                    case v: SqlNullableSmallInt =>
+                        match (v.value) {
+                        	case Some(v) => toInt16(paramTypes, paramValues, v)
+                            case None => toNULL(paramValues)
+                        }
+                    // SQL类型不同，但是数据值相对应
+                    // Int32----SqlInteger----INTEGER----INT----MYSQL_TYPE_LONG----int
+                    case v: SqlInteger => toInt32(paramTypes, paramValues, v.value)
                     case v: SqlNullableInteger =>
                         match (v.value) {
-                        	case Some(v) =>
-                                paramTypes.append(UInt8(FieldTypeLongLong))
-                                paramTypes.append(0x00)
-                                let vByte = Array<UInt8>(8, item: 0)
-                                UInt64(v).writeLittleEndian(vByte)
-                                paramValues.appendAll(vByte)
-                            case None =>
-                                paramTypes.append(UInt8(FieldTypeNULL))
-                                paramTypes.append(0x00)
+                        	case Some(v) => toInt32(paramTypes, paramValues, v)
+                            case None => toNULL(paramValues)
                         }
 
-                    // // Int64----SqlBigInt----BIGINT----BIGINT----MYSQL_TYPE_LONGLONG----long long int
-                    case v: SqlBigInt => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
-                    case v: SqlNullableBigInt => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
-
-                    // // SQL类型不同，但是数据值相对应
-                    // // Float32----SqlReal----REAL----FLOAT----MYSQL_TYPE_FLOAT----float
-                    case v: SqlReal => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
-                    case v: SqlNullableReal => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
-
-                    // // Float64----SqlDouble----DOUBLE----DOUBLE----MYSQL_TYPE_DOUBLE----double
-                    case v: SqlDouble => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
-                    case v: SqlNullableDouble => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
+                    // Int64----SqlBigInt----BIGINT----BIGINT----MYSQL_TYPE_LONGLONG----long long int
+                    case v: SqlBigInt => toInt64(paramTypes, paramValues, v.value)
+                    case v: SqlNullableBigInt =>
+                        match (v.value) {
+                        	case Some(v) => toInt64(paramTypes, paramValues, v)
+                            case None => toNULL(paramValues)
+                        }
+                    // SQL类型不同，但是数据值相对应
+                    // Float32----SqlReal----REAL----FLOAT----MYSQL_TYPE_FLOAT----float
+                    case v: SqlReal => toFloat32(paramTypes, paramValues, v.value)
+                    case v: SqlNullableReal =>
+                        match (v.value) {
+                        	case Some(v) => toFloat32(paramTypes, paramValues, v)
+                            case None => toNULL(paramValues)
+                        }
+                    // Float64----SqlDouble----DOUBLE----DOUBLE----MYSQL_TYPE_DOUBLE----double
+                    case v: SqlDouble => toFloat64(paramTypes, paramValues, v.value)
+                    case v: SqlNullableDouble =>
+                        match (v.value) {
+                        	case Some(v) => toFloat64(paramTypes, paramValues, v)
+                            case None => toNULL(paramValues)
+                        }
 
                     //  DateTime----SqlDate----DATE----DATE----MYSQL_TYPE_DATE----MYSQL_TIME
-                    case v: SqlDate => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
-                    case v: SqlNullableDate => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
-
+                    case v: SqlDate => toDateTime(paramTypes, paramValues, v.value)
+                    case v: SqlNullableDate =>
+                        match (v.value) {
+                        	case Some(v) => toDateTime(paramTypes, paramValues, v)
+                            case None => toNULL(paramValues)
+                        }
                     // DateTime----SqlTime----TIME----TIME----MYSQL_TYPE_TIME----MYSQL_TIME
-                    case v: SqlTime => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
-                    case v: SqlNullableTime => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
+                    case v: SqlTime => toDateTime(paramTypes, paramValues, v.value)
+                    case v: SqlNullableTime =>
+                        match (v.value) {
+                        	case Some(v) => toDateTime(paramTypes, paramValues, v)
+                            case None => toNULL(paramValues)
+                        }
 
-                    //  DateTime----SqlTimeTz----TIMETZ----TIME----MYSQL_TYPE_TIME----MYSQL_TIME
-                    //  mysql不支持
-                    case _: SqlTimeTz => throw SqlException("Unsupported data type.")
-                    case _: SqlNullableTimeTz => throw SqlException("Unsupported data type.")
+                    // DateTime----SqlTimestamp----TIMESTAMP----TIMESTAMP----MYSQL_TYPE_TIMESTAMP----MYSQL_TIME
+                    case v: SqlTimestamp => toDateTime(paramTypes, paramValues, v.value)
+                    case v: SqlNullableTimestamp =>
+                        match (v.value) {
+                        	case Some(v) => toDateTime(paramTypes, paramValues, v)
+                            case None => toNULL(paramValues)
+                        }
 
-                    // // DateTime----SqlTimestamp----TIMESTAMP----TIMESTAMP----MYSQL_TYPE_TIMESTAMP----MYSQL_TIME
-                    case v: SqlTimestamp => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
-                    case v: SqlNullableTimestamp => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
-
-                    // // Duration----SqlInterval----INTERVAL----DATE----MYSQL_TYPE_DATE----MYSQL_TIME
-                    // // mysql不支持
-                    case _: SqlInterval => throw SqlException("无法识别的参数类型｜待支持的类型 SqlInterval")
-                    case _: SqlNullableInterval => throw SqlException("无法识别的参数类型｜待支持的类型 SqlNullableInterval")
                     case s: SqlDbType => throw SqlException("无法识别的参数类型｜待支持的类型 SqlDbType.name = ${s.name}")
-                	case _ =>
-                	    throw SqlException("无法识别的参数类型｜待支持的类型 arg")
                 }
             }
 

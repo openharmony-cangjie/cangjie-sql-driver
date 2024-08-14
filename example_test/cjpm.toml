@@ -1,5 +1,5 @@
 [dependencies]
-    mysql = {git = "https://gitcode.com/service/cangjie-sql-driver.git", branch = "main", version = "0.0.1"}
+    mysql = {path = "../"}
 
 
 [package]

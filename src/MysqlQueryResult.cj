@@ -216,11 +216,19 @@ public class MysqlQueryResult <: QueryResult {
         	this.stmt.conn.handleErrorPacket(data)
         }
         // NULL-bitmap,  [(column-count + 7 + 2) / 8 bytes]
-        var pos = 1 + ((this.columns.size+7+2)>>3)
+        var pos: Int64 = 1 + ((this.columns.size+7+2)>>3)
+        let nullMask = data[1..pos]
 
         var row = Array<Array<UInt8>>(this.columns.size, item: Array<UInt8>())
 
         for (i in 0..this.columns.size) {
+            // Field is NULL
+            // (byte >> bit-pos) % 2 == 1
+            if (((nullMask[(i+2)>>3] >> UInt64((i+2)&7)) & 1) == 1) {
+                row[i] = Array<UInt8>()
+                continue
+            }
+
         	let column = this.columns[i]
         	match (column.fieldType) {
         	    // fieldTypeNULL 数据库返回的值是 NULL
@@ -235,14 +243,24 @@ public class MysqlQueryResult <: QueryResult {
         		case 9 | 3 | 4=> row[i] = data[pos..pos+4]
         		    pos += 4
         		// fieldTypeLongLong, fieldTypeDouble
-        		case 8 | 5 => row[i] = data[pos..pos+8]
+        		case 8 | 5 =>
+        		    row[i] = data[pos..pos+8]
         		    pos += 8
-
-        		case _=>
-        		var checkData = data[pos..]
+        		// 二进制数据类型 | 字符串
+        		case 0 | 246 | 15 | 16 | 247 | 248 | 249 | 250 | 251 | 252 | 253 | 254 | 255 | 245=>
+        		    var checkData = data[pos..]
                     var (tmp, _, n) = readLengthEncodedString(checkData)
                     pos += n
                     row[i] = tmp
+                // 时间格式
+        		case 7 | 10 | 12 | 11 | 14  =>
+        		    var checkData = data[pos..]
+                    var (num, _, n) = readLengthEncodedInteger(checkData)
+                    pos += n
+                    row[i] = data[pos..pos+Int64(num)]
+                    pos += Int64(num)
+        		case _=>
+        		    throw SqlException("未定义的数据库类型 column.fieldType = ${column.fieldType}")
         	}
         }
         return (row, true)

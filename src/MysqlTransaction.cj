@@ -104,7 +104,7 @@ public class MysqlTransaction <: Transaction {
      * 异常 SqlException - 提交事务时服务器端发生错误或者事务已提交或回滚或连接已断开。
      */
     public override func save(savePointName: String): Unit {
-
+        throw SqlException("TODO save ${savePointName}")
     }
 
     /*
@@ -114,7 +114,7 @@ public class MysqlTransaction <: Transaction {
      * 异常 SqlException - 提交事务时服务器端发生错误或者事务已提交或回滚或连接已断开。
      */
     public override func rollback(savepointName: String): Unit {
-
+        throw SqlException("TODO rollback ${savepointName}")
     }
 
     /*
@@ -124,6 +124,6 @@ public class MysqlTransaction <: Transaction {
      * 异常 SqlException - 提交事务时服务器端发生错误或者事务已提交或回滚或连接已断开。
      */
     public override func release(savePointName: String): Unit {
-
+        throw SqlException("TODO release ${savePointName}")
     }
 }

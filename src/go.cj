@@ -175,20 +175,21 @@ func formatBinaryDateTime(src: Array<UInt8>, length: UInt8): Array<UInt8> {
 	dst.append(digits10[p2]); dst.append(digits01[p2]); dst.append(b':');
 	dst.append(digits10[p3]); dst.append(digits01[p3]);
 
-    return appendMicrosecs(dst, srcNew[2..], Int64(Int64(length) - 20))
+    return dst.toArray()
+    // return appendMicrosecs(dst, srcNew[2..], Int64(Int64(length) - 20))
 }
 
 // 填充微秒
-func appendMicrosecs(dst: ArrayList<UInt8>, src: Array<UInt8>, decimals: Int64): Array<UInt8> {
-	if (decimals <= 0) {
-		return dst.toArray()
-	}
-	// mysql 可以不用微妙
-
-//	if (src.size == 0) {
-//	    dst.appendAll(".000000".toArray())
+//func appendMicrosecs(dst: ArrayList<UInt8>, src: Array<UInt8>, decimals: Int64): Array<UInt8> {
+//	if (decimals <= 0) {
 //		return dst.toArray()
 //	}
-
-    return dst.toArray()
-}
+//	// mysql 可以不用微妙
+//
+////	if (src.size == 0) {
+////	    dst.appendAll(".000000".toArray())
+////		return dst.toArray()
+////	}
+//
+//    return dst.toArray()
+//}

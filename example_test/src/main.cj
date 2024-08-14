@@ -31,15 +31,15 @@ main(): Int64 {
     var Id = SqlInteger(0)
     var Age = SqlInteger(0)
     var Str = SqlNullableVarchar("")
-    var Coin = SqlReal(Float32(0))
-    var CreateAt = SqlTimestamp(DateTime.now())
+    var Coin = SqlNullableDouble(Float64(0))
+    var CreateAt = SqlNullableTimestamp(DateTime.now())
     var arrDb: Array<SqlDbType> = [Id, Age, Str, Coin, CreateAt]
 
     var isBool = false
     do {
     	isBool = result.next(arrDb)
     	if (isBool) {
-    		info("result(Id = ${Id.value} Age = ${Age.value} Str = ${Str.value}) Coin = ${Coin.value} Coin = ${CreateAt.value}")
+    		info("result(Id = ${Id.value} Age = ${Age.value} Str = ${Str.value}) Coin = ${Coin.value} CreateAt = ${CreateAt.value}")
     	}
     } while (isBool)
 
@@ -47,8 +47,8 @@ main(): Int64 {
     try {
         let tx = conn.createTransaction()
         tx.begin()
-        let stmtUp = conn.prepareStatement("UPDATE users SET age = ? WHERE id = ?")
-        stmtUp.update(SqlInteger(100), SqlInteger(1))
+        let stmtUp = conn.prepareStatement("UPDATE users SET age = ?, create_at = ? WHERE id = ?")
+        stmtUp.update(SqlInteger(100), SqlTimestamp(DateTime.now()), SqlInteger(1))
 
         tx.commit()
     } catch (e: SqlException) {
