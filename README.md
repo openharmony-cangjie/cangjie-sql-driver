@@ -11,7 +11,7 @@ https://github.com/openharmony-cangjie/cangjie-sql-driver
 
 ### 使用
 
-当前只是用 msyql8.0 验证; 开发中，还未稳定
+当前只是用 msyql8.0, mysql 5.7 验证
 
 ````
 CREATE TABLE `users` (
