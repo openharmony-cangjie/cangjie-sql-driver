@@ -4,15 +4,10 @@ import std.database.sql.*
 import std.collection.*
 
 public class MysqlTransaction <: Transaction {
-    private var mysqlConnection: MysqlConnection
+    public var conn: MysqlTcp
 
-    /*
-     * 初始化数据库事务
-     *
-     * 参数 mysql - 初始化的mysql
-     */
-    init(mysqlConnection: MysqlConnection) {
-        this.mysqlConnection = mysqlConnection
+    public init(conn: MysqlTcp) {
+        this.conn = conn
     }
 
     /*
@@ -64,7 +59,18 @@ public class MysqlTransaction <: Transaction {
      * 异常 SqlException - 开始数据库事务失败。
      */
     public override func begin(): Unit {
+        // TODO START TRANSACTION READ ONLY
+        let sql = "START TRANSACTION"
+        // 发送指令
+        conn.writeCommandPacketStr(ComQuery, sql)
 
+    	var (resLen, _, _) = conn.readResultSetHeaderPacket()
+        if (resLen>0) {
+            // 丢弃 columns
+            conn.readUntilEOF()
+            // rows
+            conn.readUntilEOF()
+        }
     }
 
     /*
@@ -73,7 +79,10 @@ public class MysqlTransaction <: Transaction {
      * 异常 SqlException - 提交数据库事务失败。
      */
     public override func commit(): Unit {
+        // 发送指令
+        conn.writeCommandPacketStr(ComQuery, "COMMIT")
 
+    	this.conn.readResultSetHeaderPacket()
     }
 
     /*
@@ -82,7 +91,10 @@ public class MysqlTransaction <: Transaction {
      * 异常 SqlException - 从挂起状态回滚事务失败。
      */
     public override func rollback(): Unit {
+        // 发送指令
+        conn.writeCommandPacketStr(ComQuery, "ROLLBACK")
 
+    	this.conn.readResultSetHeaderPacket()
     }
 
     /*

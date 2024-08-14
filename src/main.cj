@@ -37,5 +37,19 @@ main(): Int64 {
     	}
     } while (isBool)
 
+    try {
+        let tx = conn.createTransaction()
+        tx.begin()
+        let stmtUp = conn.prepareStatement("UPDATE users SET age = ? WHERE id = ?")
+        stmtUp.update(SqlInteger(100), SqlInteger(1))
+
+        tx.commit()
+    } catch (e: SqlException) {
+
+    }
+
+
+
+
     return 0
 }

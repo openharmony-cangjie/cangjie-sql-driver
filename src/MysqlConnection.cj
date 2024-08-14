@@ -13,7 +13,6 @@ public class MysqlConnection <: Connection {
 
     public init(cfg: MysqlConfig) {
     	this.config = cfg
-
         this.conn = MysqlTcp(cfg)
     }
 
@@ -27,13 +26,13 @@ public class MysqlConnection <: Connection {
     }
 
     public func createTransaction(): MysqlTransaction {
-        return MysqlTransaction(this)
+        return MysqlTransaction(this.conn)
     }
 
     public func getMetaData(): HashMap<String, String> {
         return HashMap<String, String>()
     }
-
+    // 预执行
     public func prepareStatement(sql: String): MysqlStatement {
         return MysqlStatement(this.conn, sql)
     }
