@@ -3,11 +3,7 @@
 仓颉语言原生 mysql 驱动, 完全符合官方标准库接口约束。
 
 
-gitcode每次推送会导致404，稳定前优先使用 github。
-
-https://github.com/openharmony-cangjie/cangjie-sql-driver
-
-备份地址 https://gitcode.com/service/cangjie-sql-driver/overview
+https://gitcode.com/service/cangjie-mysql-driver/overview
 
 ### 使用
 
