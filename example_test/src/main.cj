@@ -1,6 +1,7 @@
 package example_test
 
 import std.database.sql.*
+import std.time.*
 import mysql.*
 
 main(): Int64 {
@@ -18,9 +19,9 @@ main(): Int64 {
     let conn = datasource.connect()
 
     // 测试插入数据
-    let stmt1 = conn.prepareStatement("INSERT INTO users VALUES(NULL, ? , ?)")
-    let upRet = stmt1.update(SqlInteger(2), SqlNullableVarchar("哈哈"))
-    info("lastInsertId = ${upRet.lastInsertId}")
+//    let stmt1 = conn.prepareStatement("INSERT INTO users VALUES(NULL, ? , ?, '1.9')")
+//    let upRet = stmt1.update(SqlInteger(2), SqlNullableVarchar("哈哈"))
+//    info("lastInsertId = ${upRet.lastInsertId}")
 
     // 读取
     let stmt2 = conn.prepareStatement("SELECT * FROM users")
@@ -30,13 +31,15 @@ main(): Int64 {
     var Id = SqlInteger(0)
     var Age = SqlInteger(0)
     var Str = SqlNullableVarchar("")
-    var arrDb: Array<SqlDbType> = [Id, Age, Str]
+    var Coin = SqlReal(Float32(0))
+    var CreateAt = SqlTimestamp(DateTime.now())
+    var arrDb: Array<SqlDbType> = [Id, Age, Str, Coin, CreateAt]
 
     var isBool = false
     do {
     	isBool = result.next(arrDb)
     	if (isBool) {
-    		info("result(Id = ${Id.value} Age = ${Age.value} Str = ${Str.value})")
+    		info("result(Id = ${Id.value} Age = ${Age.value} Str = ${Str.value}) Coin = ${Coin.value} Coin = ${CreateAt.value}")
     	}
     } while (isBool)
 

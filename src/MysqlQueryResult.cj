@@ -130,25 +130,78 @@ public class MysqlQueryResult <: QueryResult {
         return true
     }
 
+    // 读取 mysql 数据, 同时填充到 value
     func readData(value: SqlDbType, rows: Array<Array<UInt8>>, i: Int64) {
     	match (value) {
-                // String----SqlChar----CHAR----CHAR----MYSQL_TYPE_STRING----char[]
+            // String----SqlChar----CHAR----CHAR----MYSQL_TYPE_STRING----char[]
+            case v: SqlChar => v.value = getString(rows[i]).getOrThrow()
+            case v: SqlNullableChar => v.value = getString(rows[i])
 
-                // SQL类型不同，但是数据值相对应
-                // Int32----SqlInteger----INTEGER----INT----MYSQL_TYPE_LONG----int
-                case v: SqlInteger => v.value = getInterger32(rows[i]).getOrThrow()
-                case v: SqlNullableInteger => v.value = getInterger32(rows[i]).getOrThrow()
+            // String----SqlVarchar----VARCHAR----VARCHAR----MYSQL_TYPE_VAR_STRING----char[]
+            case v: SqlVarchar => v.value = getString(rows[i]).getOrThrow()
+            case v: SqlNullableVarchar => v.value = getString(rows[i])
 
+            // Array<Byte>----SqlBinary----BINARY----BINARY----MYSQL_TYPE_STRING----char[]
+            case v: SqlBinary => v.value = rows[i]
+            case v: SqlNullableBinary => v.value = rows[i]
 
-                case v: SqlBigInt => v.value = getInterger64(rows[i]).getOrThrow()
-                case v: SqlNullableBigInt => v.value = getInterger64(rows[i]).getOrThrow()
+            // Array<Byte>----SqlVarBinary----VARBINARY----VARBINARY----MYSQL_TYPE_VAR_STRING----char[]
+            case v: SqlVarBinary => v.value = rows[i]
+            case v: SqlNullableVarBinary => v.value = rows[i]
 
+            // 长字符串，mysql输入对应表格没有给出，在输出表格有对应数据
+            // Array<InputStream>----SqlClob----CLOB----LONGTEXT----MYSQL_TYPE_LONG_BLOB----char[]
+            case v: SqlClob => v.value = getClob(rows[i]).getOrThrow()
+            case v: SqlNullableClob => v.value = getClob(rows[i])
 
-                case v: SqlVarchar => v.value = getString(rows[i]).getOrThrow()
-                case v: SqlNullableVarchar => v.value = getString(rows[i])
+            // Array<InputStream>----SqlBlob----BLOB----BLOB----MYSQL_TYPE_BLOB----char[]
+            case v: SqlBlob => v.value = getClob(rows[i]).getOrThrow()
+            case v: SqlNullableBlob => v.value = getClob(rows[i])
 
+            // 布尔类型在mysql数据库中表现形式是TINYINT
+            // Bool----SqlBool----BOOLEAN----TINYINT----MYSQL_TYPE_TINY----signed char
+            case v: SqlBool => v.value = getBool(rows[i]).getOrThrow()
+            case v: SqlNullableBool => v.value = getBool(rows[i])
 
-                case _ => throw SqlException("等待支持的类型 type = ${value.name}")
+            // Int8----SqlByte----TINYINT----TINYINT----MYSQL_TYPE_TINY----signed char
+            case v: SqlByte => v.value = getInterger8(rows[i]).getOrThrow()
+            case v: SqlNullableByte => v.value = getInterger8(rows[i])
+
+            // Int16----SqlSmallInt----SMALLINT----SMALLINT----MYSQL_TYPE_SHORT----short int
+            case v: SqlSmallInt => v.value = getInterger16(rows[i]).getOrThrow()
+            case v: SqlNullableSmallInt => v.value = getInterger16(rows[i])
+
+            // SQL类型不同，但是数据值相对应
+            // Int32----SqlInteger----INTEGER----INT----MYSQL_TYPE_LONG----int
+            case v: SqlInteger => v.value = getInterger32(rows[i]).getOrThrow()
+            case v: SqlNullableInteger => v.value = getInterger32(rows[i])
+
+            // Int64----SqlBigInt----BIGINT----BIGINT----MYSQL_TYPE_LONGLONG----long long int
+            case v: SqlBigInt => v.value = getInterger64(rows[i]).getOrThrow()
+            case v: SqlNullableBigInt => v.value = getInterger64(rows[i])
+
+            // SQL类型不同，但是数据值相对应
+            // Float32----SqlReal----REAL----FLOAT----MYSQL_TYPE_FLOAT----float
+            case v: SqlReal => v.value = getFloat32(rows[i]).getOrThrow()
+            case v: SqlNullableReal => v.value = getFloat32(rows[i])
+
+            // Float64----SqlDouble----DOUBLE----DOUBLE----MYSQL_TYPE_DOUBLE----double
+            case v: SqlDouble => v.value = getFloat64(rows[i]).getOrThrow()
+            case v: SqlNullableDouble => v.value = getFloat64(rows[i])
+
+            //  DateTime----SqlDate----DATE----DATE----MYSQL_TYPE_DATE----MYSQL_TIME
+            case v: SqlDate => v.value = getTime(rows[i], this.columns[i]).getOrThrow()
+            case v: SqlNullableDate => v.value = getTime(rows[i], this.columns[i])
+
+            // DateTime----SqlTime----TIME----TIME----MYSQL_TYPE_TIME----MYSQL_TIME
+            case v: SqlTime => v.value = getTime(rows[i], this.columns[i]).getOrThrow()
+            case v: SqlNullableTime => v.value = getTime(rows[i], this.columns[i])
+
+            // DateTime----SqlTimestamp----TIMESTAMP----TIMESTAMP----MYSQL_TYPE_TIMESTAMP----MYSQL_TIME
+            case v: SqlTimestamp => v.value = getTime(rows[i], this.columns[i]).getOrThrow()
+            case v: SqlNullableTimestamp => v.value = getTime(rows[i], this.columns[i])
+
+            case _ => throw SqlException("等待支持的类型 type = ${value.name}")
         }
     }
 
