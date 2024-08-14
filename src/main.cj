@@ -3,6 +3,8 @@ package mysql
 import std.database.sql.*
 
 main(): Int64 {
+    SetLevel(LogLevel.info)
+
     // 初始化数据库驱动
     let mysqlDriver = MysqlDriver("mysql")
 
@@ -21,7 +23,6 @@ main(): Int64 {
     let stmt2 = conn.prepareStatement("SELECT * FROM users")
     let result = stmt2.query()
 
-    info("quere = ", result)
     // 获取数据
     var Id = SqlInteger(0)
     var Age = SqlInteger(0)
@@ -32,7 +33,7 @@ main(): Int64 {
     do {
     	isBool = result.next(arrDb)
     	if (isBool) {
-    		debug("result(Id = ${Id.value} Age = ${Age.value} Str = ${Str.value})")
+    		info("result(Id = ${Id.value} Age = ${Age.value} Str = ${Str.value})")
     	}
     } while (isBool)
 

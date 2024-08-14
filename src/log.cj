@@ -19,6 +19,10 @@ public interface Logger {
     func error(args: Array<Any>): Unit
 }
 
+public func SetLevel(l: LogLevel) {
+    level = l
+}
+
 public func SetLogger(logger: Logger) {
     log = logger
 }
