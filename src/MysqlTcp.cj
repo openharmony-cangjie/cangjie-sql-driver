@@ -29,6 +29,10 @@ public class MysqlTcp {
         MysqlAuth(this).login()
     }
 
+    public func close() {
+    	return this.packet.writeCommandPacket(ComQuit)
+    }
+
     // 字符串的命令
     public func writeCommandPacketStr(command: UInt8, arg: String) {
     	return this.packet.writeCommandPacketStr(command, arg)

@@ -3,10 +3,13 @@ package mysql
 import std.database.sql.Connection
 import std.database.sql.ConnectionState
 import std.collection.HashMap
+import std.sync.AtomicBool
 
 public class MysqlConnection <: Connection {
     private var config: MysqlConfig
     private var conn: MysqlTcp
+    // 控制关闭的状态
+    private var closed = AtomicBool(false)
 
     public init(cfg: MysqlConfig) {
     	this.config = cfg
@@ -44,7 +47,8 @@ public class MysqlConnection <: Connection {
         if (this.isClosed()) {
             return
         }
-
+        closed.store(true)
+        this.conn.close()
     }
 
     /*
@@ -52,6 +56,6 @@ public class MysqlConnection <: Connection {
      * 返回值 Bool - 如果已经关闭返回true，否则返回false
      */
     public override func isClosed(): Bool {
-        return false
+        return closed.load()
     }
 }

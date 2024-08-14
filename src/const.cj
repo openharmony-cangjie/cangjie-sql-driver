@@ -64,6 +64,8 @@ const StatusQueryWasSlow: UInt32 = 2 << 10
 const StatusPsOutParams: UInt32 = 2 << 11
 const StatusInTransReadonly: UInt32 = 2 << 12
 const StatusSessionStateChanged: UInt32 = 2 << 13
+
+// 所有命令类型
 const ComQuit: UInt8 = 1
 const ComInitDB: UInt8 = 2
 const ComQuery: UInt8 = 3

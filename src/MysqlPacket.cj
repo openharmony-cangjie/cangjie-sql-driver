@@ -96,6 +96,19 @@ public class MysqlPacket {
         }
     }
 
+    func writeCommandPacket(command: UInt8) {
+        // Reset Packet Sequence
+        this.sequence = 0
+
+        var data = this.buf.takeSmallBuffer(4 + 1)
+
+        // Add command byte
+        data[4] = command
+
+        // Send CMD packet
+        return this.writePacket(data)
+    }
+
     // 执行一个命令包
     public func writeCommandPacketStr(command: UInt8, arg: String) {
         // 重置计数

@@ -79,8 +79,8 @@ public class MysqlStatement <: Statement {
             return
         }
 
-        this.conn.writeCommandPacketUint32(ComStmtClose, this.id)
         this.id = 0
+        this.conn.writeCommandPacketUint32(ComStmtClose, this.id)
     }
 
     /*
