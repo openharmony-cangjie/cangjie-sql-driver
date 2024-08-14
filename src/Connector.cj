@@ -4,37 +4,37 @@ import std.collection.*
 import std.os.posix.*
 
 class Connector {
-    let cfg: Config
-    let encodedAttributes: String
+    let cfg: MysqlConfig
+	let encodedAttributes: String
 
-    public init(cfg: Config) {
+    public init(cfg: MysqlConfig) {
         this.cfg = cfg
-        this.encodedAttributes = encodeConnectionAttributes(cfg)
+		this.encodedAttributes = encodeConnectionAttributes(cfg)
     }
 }
 
-func encodeConnectionAttributes(cfg: Config): String {
-    var connAttrsBuf = ArrayList<UInt8>()
+func encodeConnectionAttributes(cfg: MysqlConfig): String {
+	var connAttrsBuf = ArrayList<UInt8>()
 
-    connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrClientName)
-    connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrClientNameValue)
-    connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrOS)
-    connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrOSValue) // TODO Win32, Linux, Darwin
-    connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrPlatform)
-    connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrPlatformValue) // TODO amd64, arm 平台架构
-    connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrPid)
-    connAttrsBuf = appendLengthEncodedString(connAttrsBuf, "${getpid()}")
+	connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrClientName)
+	connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrClientNameValue)
+	connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrOS)
+	connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrOSValue) // TODO Win32, Linux, Darwin
+	connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrPlatform)
+	connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrPlatformValue) // TODO amd64, arm 平台架构
+	connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrPid)
+	connAttrsBuf = appendLengthEncodedString(connAttrsBuf, "${getpid()}")
 
-    // 只支持 tpc host
-    connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrServerHost)
-    connAttrsBuf = appendLengthEncodedString(connAttrsBuf, cfg.address)
+	// 只支持 tpc host
+	connAttrsBuf = appendLengthEncodedString(connAttrsBuf, connAttrServerHost)
+	connAttrsBuf = appendLengthEncodedString(connAttrsBuf, cfg.address)
 
-    return String.fromUtf8(connAttrsBuf.toArray())
+	return String.fromUtf8(connAttrsBuf.toArray())
 }
 
 func appendLengthEncodedString(sb: ArrayList<UInt8>, s: String): ArrayList<UInt8> {
-    var b = appendLengthEncodedInteger(sb, s.size)
+	var b = appendLengthEncodedInteger(sb, s.size)
     let ss = s.toArray()
     b.appendAll(ss)
-    return b
+	return b
 }

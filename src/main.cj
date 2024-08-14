@@ -1,41 +1,40 @@
 package mysql
 
-import std.socket.*
-import std.time.*
-import std.sync.*
-import std.os.posix
+import std.database.sql.*
 
 main(): Int64 {
-    level = LogLevel.info
+    // 初始化数据库驱动
+    let mysqlDriver = MysqlDriver("mysql")
 
-    info("启动。。。")
-    let mysql = Config("localhost", 3306, "root", "root", "temp").Build()
+    // 通过connectionString和选项打开数据源
+    let datasource: MysqlDatasource = mysqlDriver.open(
+        "root:root@tcp(localhost:3306)/temp",
+        Array<(String, String)>()
+    )
 
-    //    var stmt = mysql.Prepare("INSERT INTO squareNum VALUES( ?, ? )")
-    //    info("插入数据")
-    //    stmt.Exec(101,201)
+    let conn = datasource.connect()
+    let stmt1 = conn.prepareStatement("INSERT INTO users VALUES(NULL, ? , ?)")
+    let upRet = stmt1.update(SqlInteger(2), SqlNullableVarchar("哈哈"))
+    info("lastInsertId = ${upRet.lastInsertId}")
 
-    var stmtOut = mysql.Prepare("SELECT squareNumber FROM squarenum WHERE number = ?")
-    var data = stmtOut.QueryRow(2)
-    info("读取信息 = ", data)
+    // 读取
+    let stmt2 = conn.prepareStatement("SELECT * FROM users")
+    let result = stmt2.query()
 
-    runTcpServer()
+    info("quere = ", result)
+    // 获取数据
+    var Id = SqlInteger(0)
+    var Age = SqlInteger(0)
+    var Str = SqlNullableVarchar("")
+    var arrDb: Array<SqlDbType> = [Id, Age, Str]
+
+    var isBool = false
+    do {
+    	isBool = result.next(arrDb)
+    	if (isBool) {
+    		debug("result(Id = ${Id.value} Age = ${Age.value} Str = ${Str.value})")
+    	}
+    } while (isBool)
 
     return 0
-}
-
-let SERVER_PORT: UInt16 = 33333
-
-func runTcpServer() {
-    try (serverSocket = TcpServerSocket(bindAt: SERVER_PORT)) {
-        serverSocket.bind()
-
-        try (client = serverSocket.accept()) {
-            let buf = Array<Byte>(10, item: 0)
-            let count = client.read(buf)
-
-            // Server read 3 bytes: [1, 2, 3, 0, 0, 0, 0, 0, 0, 0]
-            println("Server read ${count} bytes: ${buf}")
-        }
-    }
 }
