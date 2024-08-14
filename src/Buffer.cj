@@ -3,6 +3,7 @@ package mysql
 import std.socket.TcpSocket
 import std.collection.*
 import std.time.*
+import std.database.sql.SqlException
 
 const defaultBufSize = 4096
 const maxCachedBufSize = 256 * 1024
@@ -40,7 +41,7 @@ public class Buffer {
 
             let rs = Array<UInt8>(4096, item: 0)
             let nn = this.socket.read(rs) // 无法使用可变长度的数组进行读取
-            trace("socket读取: ", rs[0..nn])
+
             n += nn
 
             this.buf.appendAll(rs[0..nn])
@@ -90,7 +91,7 @@ public class Buffer {
 
     public func takeSmallBuffer(length: Int): ArrayList<UInt8> {
         if (this.length > 0) {
-            throw Exception("Buffer is not empty")
+            throw SqlException("Buffer is not empty")
         }
         return this.buf[..length]
     }
@@ -98,7 +99,7 @@ public class Buffer {
     public func takeCompleteBuffer(): ArrayList<UInt8> {
         if (this.length > 0) {
             error("意外读取, buf 不应该还有数据; length(${this.length}), buf = ", this.buf[this.length..])
-            throw Exception("Buffer is not empty")
+            throw SqlException("Buffer is not empty")
         }
         return this.buf
     }

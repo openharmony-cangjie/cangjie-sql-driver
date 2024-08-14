@@ -68,7 +68,7 @@ public class MysqlTcp {
 
         let errStr = String.fromUtf8(data[9..])
 
-        throw Exception("mysql error coce: ${errNum}; message: ${errStr}")
+        throw SqlException("mysql error coce: ${errNum}; message: ${errStr}")
     }
 
     // 写入命令
@@ -82,35 +82,33 @@ public class MysqlTcp {
     }
 
     // clearResult.readResultSetHeaderPacket
-    public func readResultSetHeaderPacket(): Int64 {
+    public func readResultSetHeaderPacket(): (Int64, Int64, Int64) {
         let data = this.readPacket()
         match (data[0]) {
         	case 0=>
-        	    this.handleOkPacket(data)
-        	    return 0
+        	    let (affectedRows, insertId) = this.handleOkPacket(data)
+        	    return (0, affectedRows, insertId)
         	case 255=>
         	    // 识别不同错误
                 this.handleErrorPacket(data)
-                return 0
+                return (0, 0, 0)
         	case 251=>
-        	    throw Exception("TODO iLocalInFile readResultSetHeaderPacket")
-        	    return 0
+        	    throw SqlException("TODO iLocalInFile readResultSetHeaderPacket")
 
         	case _ =>
                 // 读取 column 数量
                 var (num, _, _) = readLengthEncodedInteger(data)
-                return Int64(num)
+                return (Int64(num), 0, 0)
         }
 
         // 读取 column 数量
 		var (num, _, _) = readLengthEncodedInteger(data)
-		return Int64(num)
+		return (Int64(num), 0, 0)
     }
 
-    var result: MysqlResult = MysqlResult()
     // 成功处理的包解析
     // https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_basic_ok_packet.html
-    public func handleOkPacket(data: Array<UInt8>) {
+    public func handleOkPacket(data: Array<UInt8>): (Int64, Int64) {
         // 0x00 [1 byte]
 
         // 受影响的行
@@ -119,23 +117,16 @@ public class MysqlTcp {
         // 新插入数据的ID
         let (insertId, _, m) = readLengthEncodedInteger(data[1 + n..])
 
-        // Update for the current statement result (only used by
-        // readResultSetHeaderPacket).
-        if (this.result.affectedRows.size > 0) {
-            this.result.affectedRows[this.result.affectedRows.size - 1] = Int64(affectedRows)
-        }
-        if (this.result.insertIds.size > 0) {
-            this.result.insertIds[this.result.insertIds.size - 1] = Int64(insertId)
-        }
-
         // server_status [2 bytes]
         this.status = readStatus(data[1 + n + m..1 + n + m + 2])
+
+        return (Int64(affectedRows), Int64(insertId))
     }
 
     // 便捷丢弃 affectedRows 和 insertIds.
     public func discardResults() {
         while ((this.status&StatusMoreResultsExists) != 0) {
-            let resLen = this.readResultSetHeaderPacket()
+            let (resLen, _, _) = this.readResultSetHeaderPacket()
             if (resLen > 0) {
                 // columns
                 this.readUntilEOF()

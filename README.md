@@ -15,11 +15,11 @@ https://github.com/openharmony-cangjie/cangjie-sql-driver
 
 ````
 CREATE TABLE `users` (
-  `id` int NOT NULL,
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
   `age` int DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ````
 
 ````
@@ -38,8 +38,8 @@ main(): Int64 {
     )
 
     let conn = datasource.connect()
-    let stmt1 = conn.prepareStatement("INSERT INTO users VALUES( ?, ? , ?)")
-    stmt1.update(SqlInteger(1), SqlInteger(2), SqlNullableVarchar("哈哈"))
+    let stmt1 = conn.prepareStatement("INSERT INTO users VALUES(NULL, ? , ?)")
+    stmt1.update(SqlInteger(2), SqlNullableVarchar("哈哈"))
 
     // 读取
     let stmt2 = conn.prepareStatement("SELECT * FROM users")

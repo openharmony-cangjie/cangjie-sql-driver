@@ -1,6 +1,7 @@
 package mysql
 
 import std.collection.*
+import std.database.sql.SqlException
 
 // encodes a uint64 value and appends it to the given bytes slice
 func appendLengthEncodedInteger(b: ArrayList<UInt8>, n: Int64): ArrayList<UInt8> {
@@ -51,7 +52,7 @@ func skipLengthEncodedString(b: Array<UInt8>):Int {
 		return n
 	}
 
-	throw Exception("EOF")
+	throw SqlException("EOF")
 }
 
 // 返回读取的个数、值是否为NULL以及读取的字节数
@@ -99,5 +100,5 @@ func readLengthEncodedString(b: Array<UInt8>): (Array<UInt8>, Bool, Int64) {
 	if (b.size >= n) {
 		return (b[n-Int64(num) .. n], false, n)
 	}
-	throw Exception("EOF")
+	throw SqlException("EOF")
 }

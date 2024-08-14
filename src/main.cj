@@ -13,8 +13,9 @@ main(): Int64 {
     )
 
     let conn = datasource.connect()
-    let stmt1 = conn.prepareStatement("INSERT INTO users VALUES( ?, ? , ?)")
-    stmt1.update(SqlInteger(1), SqlInteger(2), SqlNullableVarchar("哈哈"))
+    let stmt1 = conn.prepareStatement("INSERT INTO users VALUES(NULL, ? , ?)")
+    let upRet = stmt1.update(SqlInteger(2), SqlNullableVarchar("哈哈"))
+    info("lastInsertId = ${upRet.lastInsertId}")
 
     // 读取
     let stmt2 = conn.prepareStatement("SELECT * FROM users")
@@ -30,7 +31,9 @@ main(): Int64 {
     var isBool = false
     do {
     	isBool = result.next(arrDb)
-        debug("Id = ${Id.value} Age = ${Age.value} Str = ${Str.value} ")
+    	if (isBool) {
+    		debug("result(Id = ${Id.value} Age = ${Age.value} Str = ${Str.value})")
+    	}
     } while (isBool)
 
     return 0

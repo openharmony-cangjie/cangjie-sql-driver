@@ -23,7 +23,7 @@ public class MysqlTransaction <: Transaction {
      */
     public mut override prop isoLevel: TransactionIsoLevel {
         get() {
-            throw Exception("TODO")
+            throw SqlException("TODO")
         }
         set(value) {
 
@@ -39,7 +39,7 @@ public class MysqlTransaction <: Transaction {
      */
     public mut override prop accessMode: TransactionAccessMode {
         get() {
-            throw Exception("TODO")
+            throw SqlException("TODO")
         }
         set(value) {
 
@@ -52,7 +52,7 @@ public class MysqlTransaction <: Transaction {
      */
     public mut override prop deferrableMode: TransactionDeferrableMode {
         get() {
-            throw Exception("TODO")
+            throw SqlException("TODO")
         }
         set(_) {
         }

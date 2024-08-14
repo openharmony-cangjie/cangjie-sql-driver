@@ -21,7 +21,7 @@ public class MysqlQueryResult <: QueryResult {
     	// 发送参数包
         stmt.conn.writeExecutePacket(stmt, this.params)
 
-    	var resLen = stmt.conn.readResultSetHeaderPacket()
+    	var (resLen, _, _) = stmt.conn.readResultSetHeaderPacket()
         if (resLen>0) {
              this.columns = this.readColumns(Int64(resLen))
         }

@@ -32,13 +32,13 @@ public class MysqlPacket {
             let pktLen = Int64(UInt32(data[0]) | UInt32(data[1]) << 8 | UInt32(data[2]) << 16)
 
             if (data[3] != this.sequence) {
-                throw Exception("命令不同步。您现在无法运行此命令")
+                throw SqlException("命令不同步。您现在无法运行此命令")
             }
             this.sequence++
 
             if (pktLen == 0) {
                 if (prevData.size == 0) {
-                    throw Exception("无效的链接")
+                    throw SqlException("无效的链接")
                 }
 
                 return prevData.toArray()
@@ -81,7 +81,7 @@ public class MysqlPacket {
 
             let nLen = 4 + size
             let wData = data[..nLen].toArray()
-            trace("socket准备写入: ", wData)
+
             this.socket.write(wData)
             // TODO 这里应该需要坚持发送数量的
             // write 返回值无法使用
@@ -134,7 +134,7 @@ public class MysqlPacket {
     // 执行 stmt 参数包
     public func writeExecutePacket(stmt: MysqlStatement, args: Array<SqlDbType>) {
         if (stmt.paramCount != args.size) {
-            throw Exception("参数数量不匹配 ${stmt.paramCount}, ${args.size}")
+            throw SqlException("参数数量不匹配 ${stmt.paramCount}, ${args.size}")
         }
 
         let minPktLen = 14
@@ -227,12 +227,12 @@ public class MysqlPacket {
 
                     // // 长字符串，mysql输入对应表格没有给出，在输出表格有对应数据
                     // // Array<InputStream>----SqlClob----CLOB----LONGTEXT----MYSQL_TYPE_LONG_BLOB----char[]
-                    case v: SqlClob => throw Exception("无法识别的参数类型｜待支持的类型 SqlClob")
-                    case v: SqlNullableClob =>  throw Exception("无法识别的参数类型｜待支持的类型 SqlNullableClob")
+                    case v: SqlClob => throw SqlException("无法识别的参数类型｜待支持的类型 SqlClob")
+                    case v: SqlNullableClob =>  throw SqlException("无法识别的参数类型｜待支持的类型 SqlNullableClob")
 
                     // // Array<InputStream>----SqlBlob----BLOB----BLOB----MYSQL_TYPE_BLOB----char[]
-                    case v: SqlBlob => throw Exception("无法识别的参数类型｜待支持的类型 SqlBlob")
-                    case v: SqlNullableBlob =>  throw Exception("无法识别的参数类型｜待支持的类型 SqlNullableBlob")
+                    case v: SqlBlob => throw SqlException("无法识别的参数类型｜待支持的类型 SqlBlob")
+                    case v: SqlNullableBlob =>  throw SqlException("无法识别的参数类型｜待支持的类型 SqlNullableBlob")
 
                     // // 布尔类型在mysql数据库中表现形式是TINYINT
                     // // Bool----SqlBool----BOOLEAN----TINYINT----MYSQL_TYPE_TINY----signed char
@@ -266,8 +266,8 @@ public class MysqlPacket {
                         }
 
                     // // Int16----SqlSmallInt----SMALLINT----SMALLINT----MYSQL_TYPE_SHORT----short int
-                    case v: SqlSmallInt => throw Exception("无法识别的参数类型｜待支持的类型 ${v.value}")
-                    case v: SqlNullableSmallInt =>  throw Exception("无法识别的参数类型｜待支持的类型 ${v.value}")
+                    case v: SqlSmallInt => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
+                    case v: SqlNullableSmallInt =>  throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
                     // // SQL类型不同，但是数据值相对应
                     // // Int32----SqlInteger----INTEGER----INT----MYSQL_TYPE_LONG----int
                     case v: SqlInteger =>
@@ -290,25 +290,25 @@ public class MysqlPacket {
                         }
 
                     // // Int64----SqlBigInt----BIGINT----BIGINT----MYSQL_TYPE_LONGLONG----long long int
-                    case v: SqlBigInt => throw Exception("无法识别的参数类型｜待支持的类型 ${v.value}")
-                    case v: SqlNullableBigInt => throw Exception("无法识别的参数类型｜待支持的类型 ${v.value}")
+                    case v: SqlBigInt => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
+                    case v: SqlNullableBigInt => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
 
                     // // SQL类型不同，但是数据值相对应
                     // // Float32----SqlReal----REAL----FLOAT----MYSQL_TYPE_FLOAT----float
-                    case v: SqlReal => throw Exception("无法识别的参数类型｜待支持的类型 ${v.value}")
-                    case v: SqlNullableReal => throw Exception("无法识别的参数类型｜待支持的类型 ${v.value}")
+                    case v: SqlReal => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
+                    case v: SqlNullableReal => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
 
                     // // Float64----SqlDouble----DOUBLE----DOUBLE----MYSQL_TYPE_DOUBLE----double
-                    case v: SqlDouble => throw Exception("无法识别的参数类型｜待支持的类型 ${v.value}")
-                    case v: SqlNullableDouble => throw Exception("无法识别的参数类型｜待支持的类型 ${v.value}")
+                    case v: SqlDouble => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
+                    case v: SqlNullableDouble => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
 
                     //  DateTime----SqlDate----DATE----DATE----MYSQL_TYPE_DATE----MYSQL_TIME
-                    case v: SqlDate => throw Exception("无法识别的参数类型｜待支持的类型 ${v.value}")
-                    case v: SqlNullableDate => throw Exception("无法识别的参数类型｜待支持的类型 ${v.value}")
+                    case v: SqlDate => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
+                    case v: SqlNullableDate => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
 
                     // DateTime----SqlTime----TIME----TIME----MYSQL_TYPE_TIME----MYSQL_TIME
-                    case v: SqlTime => throw Exception("无法识别的参数类型｜待支持的类型 ${v.value}")
-                    case v: SqlNullableTime => throw Exception("无法识别的参数类型｜待支持的类型 ${v.value}")
+                    case v: SqlTime => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
+                    case v: SqlNullableTime => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
 
                     //  DateTime----SqlTimeTz----TIMETZ----TIME----MYSQL_TYPE_TIME----MYSQL_TIME
                     //  mysql不支持
@@ -316,23 +316,23 @@ public class MysqlPacket {
                     case _: SqlNullableTimeTz => throw SqlException("Unsupported data type.")
 
                     // // DateTime----SqlTimestamp----TIMESTAMP----TIMESTAMP----MYSQL_TYPE_TIMESTAMP----MYSQL_TIME
-                    case v: SqlTimestamp => throw Exception("无法识别的参数类型｜待支持的类型 ${v.value}")
-                    case v: SqlNullableTimestamp => throw Exception("无法识别的参数类型｜待支持的类型 ${v.value}")
+                    case v: SqlTimestamp => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
+                    case v: SqlNullableTimestamp => throw SqlException("无法识别的参数类型｜待支持的类型 ${v.value}")
 
                     // // Duration----SqlInterval----INTERVAL----DATE----MYSQL_TYPE_DATE----MYSQL_TIME
                     // // mysql不支持
-                    case _: SqlInterval => throw Exception("无法识别的参数类型｜待支持的类型 SqlInterval")
-                    case _: SqlNullableInterval => throw Exception("无法识别的参数类型｜待支持的类型 SqlNullableInterval")
-                    case s: SqlDbType => throw Exception("无法识别的参数类型｜待支持的类型 SqlDbType.name = ${s.name}")
+                    case _: SqlInterval => throw SqlException("无法识别的参数类型｜待支持的类型 SqlInterval")
+                    case _: SqlNullableInterval => throw SqlException("无法识别的参数类型｜待支持的类型 SqlNullableInterval")
+                    case s: SqlDbType => throw SqlException("无法识别的参数类型｜待支持的类型 SqlDbType.name = ${s.name}")
                 	case _ =>
-                	    throw Exception("无法识别的参数类型｜待支持的类型 arg")
+                	    throw SqlException("无法识别的参数类型｜待支持的类型 arg")
                 }
             }
 
             data.appendAll(paramTypes)
             data.appendAll(paramValues)
         }
-        debug("参数数据", data)
+
         this.writePacket(data)
     }
 }

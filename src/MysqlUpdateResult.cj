@@ -6,6 +6,7 @@ import std.database.sql.ColumnInfo
 
 public class MysqlUpdateResult <: UpdateResult {
     private var rows: Int64 = 0
+    private var insertIdInt64: Int64 = 0
 
     let stmt: MysqlStatement
     let params: Array<SqlDbType>
@@ -17,7 +18,10 @@ public class MysqlUpdateResult <: UpdateResult {
     	// 发送参数包
         stmt.conn.writeExecutePacket(stmt, this.params)
 
-    	var resLen = this.stmt.conn.readResultSetHeaderPacket()
+    	var (resLen, affectedRows, insertId) = this.stmt.conn.readResultSetHeaderPacket()
+
+    	this.rows = affectedRows
+    	this.insertIdInt64 = insertId
         if (resLen>0) {
             debug("MysqlUpdateResult.resLen = ", resLen)
         }
@@ -37,7 +41,7 @@ public class MysqlUpdateResult <: UpdateResult {
      */
     public override prop lastInsertId: Int64 {
         get() {
-            return Int64(0)
+            return this.insertIdInt64
         }
     }
 }

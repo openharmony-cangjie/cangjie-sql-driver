@@ -1,6 +1,7 @@
 package mysql
 
 import std.socket.*
+import std.database.sql.*
 import std.collection.*
 import std.convert.*
 import std.binary.*
@@ -29,7 +30,6 @@ public class MysqlAuth {
         if (plugin == "") {
             plugin = "mysql_native_password"
         }
-        info("解析认证随机数和方式: plugin(${plugin}) authData(${authData})")
 
         // 准备发送认证数据包
         let authResp = this.auth(authData, plugin)
@@ -49,7 +49,7 @@ public class MysqlAuth {
                 return sha256(authData, this.tcp.config.password)
 
             case "mysql_native_password" => return sha1(authData[..20], this.tcp.config.password)
-            case _ => throw Exception("不支持的认证方式 ${plugin}")
+            case _ => throw SqlException("不支持的认证方式 ${plugin}")
         }
 
         return Array<UInt8>()
@@ -146,10 +146,10 @@ public class MysqlAuth {
 
         // 检查 1 byte 协议版本
         if (data[0] == 0xff) {
-            throw Exception("无效的版本字段")
+            throw SqlException("无效的版本字段")
         }
         if (data[0] < 10) {
-            throw Exception("不支持的版本号")
+            throw SqlException("不支持的版本号")
         }
 
         var pos: Int = 0
@@ -210,7 +210,7 @@ public class MysqlAuth {
 
         if (newPlugin.size > 0) {
             // TODO
-            throw Exception("不支持的插件")
+            throw SqlException("不支持的插件")
         }
 
         if (authData.size == 0) {
@@ -232,12 +232,12 @@ public class MysqlAuth {
                             if (data[0] == 0x00) {
                                 return;
                             }
-                            throw Exception("handleAuthResult 3效的认证结果 {authData}")
-                        case 4 => throw Exception("认证结果 4 需要重新发起认证 {authData}")
+                            throw SqlException("handleAuthResult 3效的认证结果 {authData}")
+                        case 4 => throw SqlException("认证结果 4 需要重新发起认证 {authData}")
                         // // 检查 tls 连接 TODO
                         // if (this.cfg.tls) {
                         //     // TODO
-                        //     throw Exception("不支持的tls 1")
+                        //     throw SqlException("不支持的tls 1")
                         // } else {
                         //     var wData = this.buf.takeSmallBuffer(4 + 1)
                         //     wData[4] = 2
@@ -245,13 +245,13 @@ public class MysqlAuth {
                         //     let rData = this.readPacket()
 
                         //     if (rData[0] != iAuthMoreData) {
-                        //         throw Exception("服务器对caching.sha2-password的响应异常，请执行完全身份验证")
+                        //         throw SqlException("服务器对caching.sha2-password的响应异常，请执行完全身份验证")
                         //     }
                         //     // 解析 public key
                         //     let pubKey = RSAPublicKey.decodeFromPem(String.fromUtf8(rData[1..]))
                         //     this.sendEncryptedPassword(oldAuthData, pubKey)
                         // }
-                        case _ => throw Exception("handleAuthResult case _ 无效的认证结果 {authData}")
+                        case _ => throw SqlException("handleAuthResult case _ 无效的认证结果 {authData}")
                     }
                 }
 
@@ -271,15 +271,15 @@ public class MysqlAuth {
         let data = this.tcp.packet.readPacket()
 
         match (data[0]) {
-            case 0x00 => throw Exception("无效的认证结果 00")
+            case 0x00 => throw SqlException("无效的认证结果 00")
             case 0x01 => return (data[1..], "")
             case 0xfe => // iEOF
                 if (data.size == 1) {
                     return (Array<UInt8>(), "mysql_old_password")
                 }
 
-                throw Exception("无效的认证结果 01")
-            case _ => throw Exception("无效的认证结果 02")
+                throw SqlException("无效的认证结果 01")
+            case _ => throw SqlException("无效的认证结果 02")
         }
     }
 

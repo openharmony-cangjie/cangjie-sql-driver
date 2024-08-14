@@ -20,7 +20,6 @@ public class MysqlStatement <: Statement {
         this.conn = conn
 
         // 发送指令
-        info("准备发送预处理: ", sql)
         conn.writeCommandPacketStr(ComStmtPrepare, sql)
         // 读取指令
         let columnCount = this.readPrepareResultPacket()
@@ -30,7 +29,6 @@ public class MysqlStatement <: Statement {
         if (columnCount > 0) {
             conn.readUntilEOF()
         }
-        info("预执行后, StmtID(${this.id}), 行数量(${columnCount}), 需要参数(${this.paramCount})")
     }
 
     /*
