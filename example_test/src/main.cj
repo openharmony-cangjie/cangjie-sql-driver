@@ -1,6 +1,7 @@
-package mysql
+package example_test
 
 import std.database.sql.*
+import mysql.*
 
 main(): Int64 {
     SetLevel(LogLevel.info)
@@ -15,6 +16,8 @@ main(): Int64 {
     )
 
     let conn = datasource.connect()
+
+    // 测试插入数据
     let stmt1 = conn.prepareStatement("INSERT INTO users VALUES(NULL, ? , ?)")
     let upRet = stmt1.update(SqlInteger(2), SqlNullableVarchar("哈哈"))
     info("lastInsertId = ${upRet.lastInsertId}")
@@ -23,7 +26,7 @@ main(): Int64 {
     let stmt2 = conn.prepareStatement("SELECT * FROM users")
     let result = stmt2.query()
 
-    // 获取数据
+    // 填充格式
     var Id = SqlInteger(0)
     var Age = SqlInteger(0)
     var Str = SqlNullableVarchar("")
@@ -37,6 +40,7 @@ main(): Int64 {
     	}
     } while (isBool)
 
+    // 测试事务
     try {
         let tx = conn.createTransaction()
         tx.begin()
@@ -47,9 +51,6 @@ main(): Int64 {
     } catch (e: SqlException) {
 
     }
-
-
-
 
     return 0
 }

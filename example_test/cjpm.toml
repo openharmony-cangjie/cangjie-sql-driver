@@ -1,0 +1,15 @@
+[dependencies]
+    mysql = {git = "https://gitcode.com/service/cangjie-sql-driver.git", branch = "main", version = "0.0.1"}
+
+
+[package]
+  cjc-version = "0.53.4"
+  compile-option = ""
+  description = "nothing here"
+  link-option = ""
+  name = "example_test"
+  output-type = "static"
+  src-dir = ""
+  target-dir = ""
+  version = "1.0.0"
+  package-configuration = {}
