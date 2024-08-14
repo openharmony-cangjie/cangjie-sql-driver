@@ -34,13 +34,16 @@ mysql = {git = "https://gitcode.com/service/cangjie-sql-driver.git", branch = "m
 cjpm update
 ````
 
-编写代码
+编写代码, 查看 [example_test](example_test)
 ````cj
-package mysql
+package example_test
 
 import std.database.sql.*
+import mysql.*
 
 main(): Int64 {
+    SetLevel(LogLevel.info)
+
     // 初始化数据库驱动
     let mysqlDriver = MysqlDriver("mysql")
 
@@ -51,15 +54,17 @@ main(): Int64 {
     )
 
     let conn = datasource.connect()
+
+    // 测试插入数据
     let stmt1 = conn.prepareStatement("INSERT INTO users VALUES(NULL, ? , ?)")
-    stmt1.update(SqlInteger(2), SqlNullableVarchar("哈哈"))
+    let upRet = stmt1.update(SqlInteger(2), SqlNullableVarchar("哈哈"))
+    info("lastInsertId = ${upRet.lastInsertId}")
 
     // 读取
     let stmt2 = conn.prepareStatement("SELECT * FROM users")
     let result = stmt2.query()
 
-    info("quere = ", result)
-    // 获取数据
+    // 填充格式
     var Id = SqlInteger(0)
     var Age = SqlInteger(0)
     var Str = SqlNullableVarchar("")
@@ -68,8 +73,22 @@ main(): Int64 {
     var isBool = false
     do {
     	isBool = result.next(arrDb)
-        debug("Id = ${Id.value} Age = ${Age.value} Str = ${Str.value} ")
+    	if (isBool) {
+    		info("result(Id = ${Id.value} Age = ${Age.value} Str = ${Str.value})")
+    	}
     } while (isBool)
+
+    // 测试事务
+    try {
+        let tx = conn.createTransaction()
+        tx.begin()
+        let stmtUp = conn.prepareStatement("UPDATE users SET age = ? WHERE id = ?")
+        stmtUp.update(SqlInteger(100), SqlInteger(1))
+
+        tx.commit()
+    } catch (e: SqlException) {
+
+    }
 
     return 0
 }
