@@ -22,7 +22,20 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ````
 
+### 安装
+
+引入依赖管理
+````toml
+[dependencies]
+mysql = {git = "https://gitcode.com/service/cangjie-sql-driver.git", branch = "main", version = "0.0.1"}
 ````
+执行命令安装
+````shell
+cjpm update
+````
+
+编写代码
+````cj
 package mysql
 
 import std.database.sql.*
@@ -65,5 +78,5 @@ main(): Int64 {
 
 ### 参考
 
-https://github.com/go-sql-driver/mysql
-https://gitcode.com/Cangjie-TPC/mysqlclient-ffi.git
+- https://github.com/go-sql-driver/mysql
+- https://gitcode.com/Cangjie-TPC/mysqlclient-ffi.git
